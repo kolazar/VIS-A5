@@ -100,27 +100,24 @@ export default {
         });
     },
     drawLegend() {
-      
-       d3.select(this.$refs.rects)
-      .append("text")
-      .attr( "font-weight","bold")
-      .attr("dy","0.71em")
-      .attr("transform",`rotate(90)`)
-      .attr("text-anchor","middle")
-      .text("sdfsdf");
-
-
- d3.select(this.$refs.rects)
-      .append("text")
-      .attr( "font-weight","bold")
-      .attr("dy","3.4em")
-      .attr("text-anchor","middle")
-      .text("sdfsdf");
-
+      d3.select(this.$refs.rects)
+        .append("text")
+        .attr("font-weight", "bold")
+        .attr("dy", "0.71em")
+        .attr("transform", `rotate(90)`)
+        .attr("text-anchor", "middle")
+        .text("sdfsdf");
 
       d3.select(this.$refs.rects)
-      .attr("transform", "translate(20,400)")
-      
+        .append("text")
+        .attr("font-weight", "bold")
+        .attr("dy", "3.4em")
+        .attr("text-anchor", "middle")
+        .text("sdfsdf");
+
+      d3.select(this.$refs.rects)
+        .attr("transform", "translate(20,400)")
+
         .selectAll("rect")
         .data(this.rectangularProps)
         .enter()
@@ -129,24 +126,19 @@ export default {
         .attr("width", (d) => d.width)
         .attr("y", (d) => d.y)
         .attr("height", (d) => d.height)
-        .attr("fill", (d) => d.fill)
-        
-        ;
-        
+        .attr("fill", (d) => d.fill);
     },
   },
   computed: {
     data: {
       get() {
-        return this.$store.getters.data;
+        return this.$store.getters.cardioDiabetes;
       },
     },
     rectangularProps() {
       let rectData = [];
-      let plotAreaWidth =
-       40;
-      let plotAreaHeight =
-        40;
+      let plotAreaWidth = 40;
+      let plotAreaHeight = 40;
 
       //Calculating properties for the rectangles
       d3.cross(d3.range(this.n), d3.range(this.n)).map(([i, j]) => {

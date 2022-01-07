@@ -11,7 +11,8 @@ const store = new Vuex.Store({
   state: {
     selectedYear: 2006,
     selectedStates: [],
-    data:[],
+    cardioDiabetes: [],
+    data: [],
   },
   mutations: {
     changeSelectedYear(state, year) {
@@ -26,42 +27,46 @@ const store = new Vuex.Store({
   getters: {
     selectedYear: (state) => state.selectedYear,
     selectedStates: (state) => state.selectedStates,
-    data(state) {
+    cardioDiabetes(state) {
       let result = new Map();
-      for (let i = 0; i < state.data.length; i++) {
-        
-        
-
-          result.set(state.data[i].iso_code,
-          
-          [+state.data[i].cardiovasc_death_rate,+state.data[i].diabetes_prevalence]
-          )
-          
-          
-          // .push({
-          //   country: state.data[i].iso_code,
-          //   cardioValue: +state.data[i].cardiovasc_death_rate,
-          //   diabetesValue: +state.data[i].diabetes_prevalence,
-          // })
-        
-        
+      for (let i = 0; i < state.cardioDiabetes.length; i++) {
+        result.set(state.cardioDiabetes[i].iso_code,
+          [+state.cardioDiabetes[i].cardiovasc_death_rate, +state.cardioDiabetes[i].diabetes_prevalence]
+        )
       }
       return result;
     },
-   
-    
+    data(state) {
+      let result = [];
+      for (let i = 0; i < state.data.length; i++) {
+        result.push({
+          isoCode: state.data[i].iso_code,
+          countryName: state.data[i].location,
+          date: new Date(state.data[i].date),
+          newDeaths: +state.data[i].new_deaths_smoothed_per_million,
+          newVaccinations: +state.data[i].new_vaccinations_smoothed_per_million,
+        })
+      }
+
+      return result;
+    },
+
   },
   actions: {
-    loadData({state}) {
-      
-        d3.csv('./owid-covid-data-reduced.csv')
+    loadData({ state }) {
 
-        .then((data) => {
-          state.data = data;
+      d3.csv('./owid-covid-data-choropleth.csv')
+
+        .then((d) => {
+          state.cardioDiabetes = d;
         })
 
+      d3.csv('./owid-covid-data-scatter.csv').then((d) => {
+        state.data = d;
+      document.getElementById('loading-message').remove();
+        // document.getElementById('hide-screen').style.display = "block";
+      })
 
-      
 
     },
   }

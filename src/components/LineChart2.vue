@@ -1,9 +1,5 @@
 <template>
   <div class="vis-component" ref="chart">
-    <div class="placeholder">
-      <!-- <b>Here comes the choropleth map</b>. -->
-      <!-- <p>Selected states by clicking on the bar chart: {{ selectedStates }}</p> -->
-    </div>
     <svg class="main-svg" :width="svgWidth" :height="svgHeight">
       <g class="chart-group" ref="chartGroup">
         <g class="map-group" ref="mapGroup"></g>

@@ -1,0 +1,215 @@
+iso_code,location,date,new_deaths_smoothed_per_million,new_vaccinations_smoothed_per_million
+AFG,Afghanistan,31/12/2021,0.029,
+ALB,Albania,31/12/2021,1.492,
+DZA,Algeria,31/12/2021,0.173,
+AND,Andorra,31/12/2021,1.847,
+AGO,Angola,31/12/2021,0.101,
+AIA,Anguilla,31/12/2021,0,
+ATG,Antigua and Barbuda,31/12/2021,1.447,
+ARG,Argentina,31/12/2021,0.504,5975
+ARM,Armenia,31/12/2021,1.588,
+ABW,Aruba,31/12/2021,0,
+AUS,Australia,31/12/2021,0.332,2883
+AUT,Austria,31/12/2021,1.832,3477
+AZE,Azerbaijan,31/12/2021,1.244,2362
+BHS,Bahamas,31/12/2021,1.44,
+BHR,Bahrain,31/12/2021,0,4879
+BGD,Bangladesh,31/12/2021,0.015,
+BRB,Barbados,31/12/2021,0,
+BLR,Belarus,31/12/2021,1.694,
+BEL,Belgium,31/12/2021,2.235,
+BLZ,Belize,31/12/2021,3.528,
+BEN,Benin,31/12/2021,0,
+BMU,Bermuda,31/12/2021,9.203,
+BTN,Bhutan,31/12/2021,0,
+BOL,Bolivia,31/12/2021,1.811,
+BES,Bonaire Sint Eustatius and Saba,31/12/2021,5.402,
+BIH,Bosnia and Herzegovina,31/12/2021,7.573,
+BWA,Botswana,31/12/2021,1.013,
+BRA,Brazil,31/12/2021,0.453,1780
+VGB,British Virgin Islands,31/12/2021,0,
+BRN,Brunei,31/12/2021,0,
+BGR,Bulgaria,31/12/2021,9.922,978
+BFA,Burkina Faso,31/12/2021,0.007,
+BDI,Burundi,31/12/2021,0,
+KHM,Cambodia,31/12/2021,0.042,
+CMR,Cameroon,31/12/2021,0,
+CAN,Canada,31/12/2021,0.668,6730
+CPV,Cape Verde,31/12/2021,0,
+CYM,Cayman Islands,31/12/2021,0,
+CAF,Central African Republic,31/12/2021,0,
+TCD,Chad,31/12/2021,0,
+CHL,Chile,31/12/2021,0.974,
+CHN,China,31/12/2021,0,8849
+COL,Colombia,31/12/2021,0.713,
+COM,Comoros,31/12/2021,0.643,
+COG,Congo,31/12/2021,0,
+COK,Cook Islands,31/12/2021,,
+CRI,Costa Rica,31/12/2021,,
+CIV,Cote d'Ivoire,31/12/2021,0.037,
+HRV,Croatia,31/12/2021,10.71,
+CUB,Cuba,31/12/2021,0.063,
+CUW,Curacao,31/12/2021,2.601,9478
+CYP,Cyprus,31/12/2021,1.754,
+CZE,Czechia,31/12/2021,11.203,3540
+COD,Democratic Republic of Congo,31/12/2021,,
+DNK,Denmark,31/12/2021,1.966,
+DJI,Djibouti,31/12/2021,0,
+DMA,Dominica,31/12/2021,5.938,
+DOM,Dominican Republic,31/12/2021,0.17,
+ECU,Ecuador,31/12/2021,0.319,
+EGY,Egypt,31/12/2021,0.282,
+SLV,El Salvador,31/12/2021,0.153,
+GNQ,Equatorial Guinea,31/12/2021,0,
+ERI,Eritrea,31/12/2021,0.159,
+EST,Estonia,31/12/2021,2.695,607
+SWZ,Eswatini,31/12/2021,3.777,
+ETH,Ethiopia,31/12/2021,0.059,
+FRO,Faeroe Islands,31/12/2021,2.912,
+FLK,Falkland Islands,31/12/2021,,
+FJI,Fiji,31/12/2021,0.158,
+FIN,Finland,31/12/2021,1.468,4741
+FRA,France,31/12/2021,2.709,
+PYF,French Polynesia,31/12/2021,0,
+GAB,Gabon,31/12/2021,0.125,
+GMB,Gambia,31/12/2021,0.057,
+GEO,Georgia,31/12/2021,15.543,
+DEU,Germany,31/12/2021,3.119,4397
+GHA,Ghana,31/12/2021,0.117,
+GIB,Gibraltar,31/12/2021,0,
+GRC,Greece,31/12/2021,6.86,6335
+GRL,Greenland,31/12/2021,2.512,
+GRD,Grenada,31/12/2021,0,
+GTM,Guatemala,31/12/2021,0.094,
+GIN,Guinea,31/12/2021,0.021,
+GNB,Guinea-Bissau,31/12/2021,0,
+GUY,Guyana,31/12/2021,2.169,
+HTI,Haiti,31/12/2021,0.012,
+HND,Honduras,31/12/2021,0.142,
+HKG,Hong Kong,31/12/2021,0,2013
+HUN,Hungary,31/12/2021,13.034,
+ISL,Iceland,31/12/2021,0,
+IND,India,31/12/2021,0.202,4543
+IDN,Indonesia,31/12/2021,0.024,5439
+IRN,Iran,31/12/2021,0.504,
+IRQ,Iraq,31/12/2021,0.149,
+IRL,Ireland,31/12/2021,,4527
+IMN,Isle of Man,31/12/2021,0,4274
+ISR,Israel,31/12/2021,0.031,2237
+ITA,Italy,31/12/2021,2.404,6907
+JAM,Jamaica,31/12/2021,0.528,
+JPN,Japan,31/12/2021,0.008,
+JOR,Jordan,31/12/2021,0,
+KAZ,Kazakhstan,31/12/2021,,1032
+KEN,Kenya,31/12/2021,0.055,
+KIR,Kiribati,31/12/2021,,
+KWT,Kuwait,31/12/2021,0.033,
+KGZ,Kyrgyzstan,31/12/2021,0.216,775
+LAO,Laos,31/12/2021,1.297,
+LVA,Latvia,31/12/2021,5.815,
+LBN,Lebanon,31/12/2021,2.258,2364
+LSO,Lesotho,31/12/2021,0,
+LBR,Liberia,31/12/2021,0,
+LBY,Libya,31/12/2021,1.417,
+LIE,Liechtenstein,31/12/2021,0,
+LTU,Lithuania,31/12/2021,7.329,4782
+LUX,Luxembourg,31/12/2021,1.8,
+MAC,Macao,31/12/2021,,
+MDG,Madagascar,31/12/2021,,
+MWI,Malawi,31/12/2021,0.305,
+MYS,Malaysia,31/12/2021,0.859,4141
+MDV,Maldives,31/12/2021,0.263,
+MLI,Mali,31/12/2021,0.055,
+MLT,Malta,31/12/2021,0.83,
+MHL,Marshall Islands,31/12/2021,,
+MRT,Mauritania,31/12/2021,0.15,
+MUS,Mauritius,31/12/2021,0,
+MEX,Mexico,31/12/2021,0.831,
+FSM,Micronesia (country),31/12/2021,,
+MDA,Moldova,31/12/2021,24.354,1087
+MCO,Monaco,31/12/2021,0,
+MNG,Mongolia,31/12/2021,0.215,1182
+MNE,Montenegro,31/12/2021,5.232,2597
+MSR,Montserrat,31/12/2021,0,
+MAR,Morocco,31/12/2021,0.092,
+MOZ,Mozambique,31/12/2021,0.182,
+MMR,Myanmar,31/12/2021,0.052,
+NAM,Namibia,31/12/2021,1.767,
+NPL,Nepal,31/12/2021,0.058,
+NLD,Netherlands,31/12/2021,2.188,
+NCL,New Caledonia,31/12/2021,0.496,
+NZL,New Zealand,31/12/2021,0.056,
+NIC,Nicaragua,31/12/2021,0.021,
+NER,Niger,31/12/2021,0.006,
+NGA,Nigeria,31/12/2021,0.025,
+MKD,North Macedonia,31/12/2021,5.556,
+NOR,Norway,31/12/2021,,
+OMN,Oman,31/12/2021,0.082,
+PAK,Pakistan,31/12/2021,0.018,
+PLW,Palau,31/12/2021,,
+PSE,Palestine,31/12/2021,0.957,
+PAN,Panama,31/12/2021,0.717,3845
+PNG,Papua New Guinea,31/12/2021,0.016,
+PRY,Paraguay,31/12/2021,0.554,
+PER,Peru,31/12/2021,,
+PHL,Philippines,31/12/2021,0.584,
+POL,Poland,31/12/2021,11.388,3143
+PRT,Portugal,31/12/2021,1.461,4556
+QAT,Qatar,31/12/2021,0.195,2567
+ROU,Romania,31/12/2021,1.83,
+RUS,Russia,31/12/2021,6.269,3252
+RWA,Rwanda,31/12/2021,0.054,
+SHN,Saint Helena,31/12/2021,,
+KNA,Saint Kitts and Nevis,31/12/2021,0,
+LCA,Saint Lucia,31/12/2021,0,412
+SPM,Saint Pierre and Miquelon,31/12/2021,,
+VCT,Saint Vincent and the Grenadines,31/12/2021,0,
+WSM,Samoa,31/12/2021,,
+SMR,San Marino,31/12/2021,8.401,
+STP,Sao Tome and Principe,31/12/2021,0,
+SAU,Saudi Arabia,31/12/2021,0.032,6632
+SEN,Senegal,31/12/2021,0,
+SRB,Serbia,31/12/2021,3.534,
+SYC,Seychelles,31/12/2021,4.333,
+SLE,Sierra Leone,31/12/2021,0,
+SGP,Singapore,31/12/2021,0.21,
+SVK,Slovakia,31/12/2021,9.025,2860
+SVN,Slovenia,31/12/2021,4.123,1859
+SLB,Solomon Islands,31/12/2021,,
+SOM,Somalia,31/12/2021,0,
+ZAF,South Africa,31/12/2021,0.956,
+KOR,South Korea,31/12/2021,1.25,10601
+SSD,South Sudan,31/12/2021,0,
+ESP,Spain,31/12/2021,,
+LKA,Sri Lanka,31/12/2021,0.844,5961
+SDN,Sudan,31/12/2021,,
+SUR,Suriname,31/12/2021,0.724,
+SWE,Sweden,31/12/2021,,
+CHE,Switzerland,31/12/2021,2.491,
+SYR,Syria,31/12/2021,0.235,
+TWN,Taiwan,31/12/2021,0,
+TJK,Tajikistan,31/12/2021,0,
+TZA,Tanzania,31/12/2021,0.007,
+THA,Thailand,31/12/2021,0.347,
+TLS,Timor,31/12/2021,0,
+TGO,Togo,31/12/2021,0.034,
+TON,Tonga,31/12/2021,,
+TTO,Trinidad and Tobago,31/12/2021,15.371,1813
+TUN,Tunisia,31/12/2021,0.634,
+TUR,Turkey,31/12/2021,1.853,6134
+TCA,Turks and Caicos Islands,31/12/2021,0,
+UGA,Uganda,31/12/2021,0.061,
+UKR,Ukraine,31/12/2021,5.439,1639
+ARE,United Arab Emirates,31/12/2021,0.129,
+GBR,United Kingdom,31/12/2021,1.609,
+USA,United States,31/12/2021,3.905,
+URY,Uruguay,31/12/2021,0.328,1170
+UZB,Uzbekistan,31/12/2021,0.042,
+VUT,Vanuatu,31/12/2021,0,
+VAT,Vatican,31/12/2021,,
+VEN,Venezuela,31/12/2021,0.08,
+VNM,Vietnam,31/12/2021,2.369,
+WLF,Wallis and Futuna,31/12/2021,0,
+YEM,Yemen,31/12/2021,0.009,
+ZMB,Zambia,31/12/2021,0.325,1176
+ZWE,Zimbabwe,31/12/2021,1.259,556

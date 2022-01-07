@@ -1,21 +1,13 @@
 <template>
   <div class="vis-component" ref="chart">
-    <div class="placeholder">
-      <!-- <b>Here comes the scatterplot</b>.
-      <p>
-        Education Attainment Rate for the Selected Year: {{ educationRates }}
-      </p> -->
       <div class="tooltip"></div>
       <svg class="main-svg" :width="svgWidth" :height="svgHeight">
         <g class="chart-group" ref="chartGroup">
           <g class="axis axis-x" ref="axisX"></g>
           <g class="axis axis-y" ref="axisY"></g>
-          <g class="rects-group" ref="rects"></g>
-          <g class="brush" ref="brush"></g>
           <g class="circles-group" ref="circles"></g>
         </g>
       </svg>
-    </div>
   </div>
 </template>
 
@@ -61,7 +53,6 @@ export default {
       );
       this.drawXAxis();
       this.drawYAxis();
-      this.drawRects();
       this.drawCircles();
     },
     drawXAxis() {
@@ -73,7 +64,7 @@ export default {
             this.svgHeight - this.svgPadding.top - this.svgPadding.bottom
           } )`
         )
-        .call(d3.axisBottom(this.xScale).tickFormat((d) => d + "%"))
+        .call(d3.axisBottom(this.xScale))
         .raise()
         .append("text")
         .attr("class", "xaxis")
@@ -81,12 +72,12 @@ export default {
         .attr("x", this.svgWidth / 2)
         .attr("text-anchor", "middle")
         .attr("fill", "black")
-        .text("Educational Attainment: Bachelor's Degree or Higher");
+        .text("New deaths smoothed per million");
     },
     drawYAxis() {
       d3.select(".yaxis").remove();
       d3.select(this.$refs.axisY)
-        .call(d3.axisLeft(this.yScale).tickFormat(d3.format("$.2s")))
+        .call(d3.axisLeft(this.yScale))
         .raise()
         .append("text")
         .attr("transform", "rotate(-90)")
@@ -96,141 +87,76 @@ export default {
         .attr("dy", "0.71em")
         .attr("text-anchor", "end")
         .attr("fill", "black")
-        .text("Average Personal Yearly Income");
-    },
-    drawRects() {
-      let rectGroup = d3.select(this.$refs.rects);
-
-      rectGroup
-        .selectAll("rect")
-        .data(this.rectangularProps)
-        .enter()
-        .append("rect")
-        .attr("x", (d) => d.x)
-        .attr("width", (d) => d.width)
-        .attr("y", (d) => d.y)
-        .attr("height", (d) => d.height)
-        .attr("fill", (d) => d.fill);
+        .text("New vaccines smoothed per million");
     },
 
     drawCircles() {
-      let brush = d3
-        .brush()
-        .extent([
-          [0, 0],
-          [
-            this.svgWidth - this.svgPadding.left - this.svgPadding.right,
-            this.svgHeight - this.svgPadding.top - this.svgPadding.bottom,
-          ],
-        ])
-        .on("start brush", (event) => {
-          return this.brush(event);
-        });
+      // let brush = d3
+      //   .brush()
+      //   .extent([
+      //     [0, 0],
+      //     [
+      //       this.svgWidth - this.svgPadding.left - this.svgPadding.right,
+      //       this.svgHeight - this.svgPadding.top - this.svgPadding.bottom,
+      //     ],
+      //   ])
+      //   .on("start brush", (event) => {
+      //     return this.brush(event);
+      //   });
 
-      d3.select(this.$refs.brush).call(brush);
+      // d3.select(this.$refs.brush).call(brush);
+
+      let sumstat = d3.group(this.data, (d) => d.isoCode);
+      console.log(sumstat);
 
       let circlesGroup = d3
         .select(this.$refs.circles)
         .selectAll("circle")
-        .data(this.combinedData);
+        .data(this.data);
 
       circlesGroup.exit().remove();
 
       circlesGroup
         .enter()
         .append("circle")
-        .attr("class", (d) => d.state)
+        .attr("class", (d) => d.isoCode)
         .attr("r", 4)
         .style("stroke", "#fff")
         .merge(circlesGroup)
         .attr("cx", (d) => {
-          return this.xScale(d.educationRate);
+          return this.xScale(d.newDeaths);
         })
-        .attr("cy", (d) => this.yScale(d.personalIncome))
-        .attr("fill", (d) => {
-          return this.getColor(
-            this.xScale(d.educationRate),
-            this.yScale(d.personalIncome)
-          );
+        .attr("cy", (d) => this.yScale(d.newVaccinations))
+        .style("opacity", "0.5")
+        .attr("fill", "gray")
+        .append("title")
+        .text((d) => {
+          return `${d.countryName}, New deaths: ${d.newDeaths},New vaccinations:${d.newVaccinations}`;
         })
-        .on("mouseover", () => this.handleCircleMouseHover())
-        .on("mousemove", (event, d) =>
-          this.handleCircleMouseMove(event, d.state)
-        )
-        .on("mouseleave", () => this.handleCircleMouseOut())
-        .style("opacity", function (d) {
-          return d.filtered ? 0.5 : 1;
-        })
-        .style("stroke-width", function (d) {
-          return d.filtered ? 1 : 2;
-        });
+        // .on("mouseover", () => this.handleCircleMouseHover())
+        // .on("mousemove", (event, d) =>
+        //   this.handleCircleMouseMove(event, d.countryName)
+        // )
+        // .on("mouseleave", () => this.handleCircleMouseOut());
     },
-
-    handleCircleMouseHover() {
-      return d3.select(".tooltip").style("opacity", 1);
-    },
-    handleCircleMouseMove(event, d) {
-      const [xm, ym] = d3.pointer(event);
-      return d3
-        .select(".tooltip")
-        .html(d)
-        .style("left", xm - 40 + "px")
-        .style("top", ym + "px");
-    },
-    handleCircleMouseOut() {
-      return d3
-        .select(".tooltip")
-        .transition()
-        .duration(250)
-        .style("opacity", 0);
-    },
-    brush({ selection }) {
-      let x0 = this.xScale.invert(selection[0][0]);
-      let x1 = this.xScale.invert(selection[1][0]);
-      let y0 = this.yScale.invert(selection[1][1]);
-      let y1 = this.yScale.invert(selection[0][1]);
-
-      this.onBrush(x0, x1, y0, y1);
-    },
-
-    onBrush(x0, x1, y0, y1) {
-      let clear = x0 === x1 || y0 === y1;
-      let filtered = {
-        value: false,
-        state: "",
-      };
-      this.combinedData.forEach((d) => {
-        filtered.value = clear
-          ? false
-          : d.educationRate < x0 ||
-            d.educationRate > x1 ||
-            d.personalIncome < y0 ||
-            d.personalIncome > y1;
-
-        filtered.state = d.state;
-
-        this.$store.commit("changeFiltered", filtered);
-      });
-    },
-    resetBrush() {
-      let brush = d3.brush();
-      d3.select(this.$refs.brush).call(brush.move, null);
-    },
-    getColor(x, y) {
-      let rectData = this.rectangularProps;
-      let color = "";
-      rectData.forEach((element) => {
-        if (
-          x >= element.x &&
-          x <= element.x1 &&
-          y <= element.y1 &&
-          y >= element.y
-        )
-          color = element.fill;
-      });
-
-      return color;
-    },
+    // handleCircleMouseHover() {
+    //   return d3.select(".tooltip").style("opacity", 1);
+    // },
+    // handleCircleMouseMove(event, d) {
+    //   const [xm, ym] = d3.pointer(event);
+    //   return d3
+    //     .select(".tooltip")
+    //     .html(d)
+    //     .style("left", xm - 40 + "px")
+    //     .style("top", ym + "px");
+    // },
+    // handleCircleMouseOut() {
+    //   return d3
+    //     .select(".tooltip")
+    //     .transition()
+    //     .duration(250)
+    //     .style("opacity", 0);
+    // },
   },
   computed: {
     selectedYear: {
@@ -238,16 +164,16 @@ export default {
         return this.$store.getters.selectedYear;
       },
     },
-    educationRates: {
+    data: {
       get() {
-        return this.$store.getters.educationRates;
+        return this.$store.getters.data;
       },
     },
-    dataMaxEd() {
-      return d3.max(this.educationRates, (d) => d.value);
+    dataMaxDeaths() {
+      return d3.max(this.data, (d) => d.newDeaths);
     },
-    dataMinEd() {
-      return d3.min(this.educationRates, (d) => d.value);
+    dataMinDeaths() {
+      return d3.min(this.data, (d) => d.newDeaths);
     },
     xScale() {
       return d3
@@ -256,18 +182,14 @@ export default {
           0,
           this.svgWidth - this.svgPadding.left - this.svgPadding.right,
         ])
-        .domain([this.dataMinEd - 1, this.dataMaxEd + 1]);
+        .domain([this.dataMinDeaths, this.dataMaxDeaths]);
     },
-    personalIncome: {
-      get() {
-        return this.$store.getters.personalIncome;
-      },
+
+    dataMaxVaccines() {
+      return d3.max(this.data, (d) => d.newVaccinations);
     },
-    dataMaxInc() {
-      return d3.max(this.personalIncome, (d) => d.value);
-    },
-    dataMinInc() {
-      return d3.min(this.personalIncome, (d) => d.value);
+    dataMinVaccines() {
+      return d3.min(this.data, (d) => d.newVaccinations);
     },
     yScale() {
       return d3
@@ -276,47 +198,13 @@ export default {
           this.svgHeight - this.svgPadding.top - this.svgPadding.bottom,
           0,
         ])
-        .domain([this.dataMinInc - 2000, this.dataMaxInc + 1000]);
-    },
-    combinedData: {
-      get() {
-        return this.$store.getters.combinedData;
-      },
-    },
-
-    rectangularProps() {
-      let rectData = [];
-      let plotAreaWidth =
-        this.svgWidth - this.svgPadding.left - this.svgPadding.right;
-      let plotAreaHeight =
-        this.svgHeight - this.svgPadding.top - this.svgPadding.bottom;
-
-      //Calculating properties for the rectangles
-      d3.cross(d3.range(this.n), d3.range(this.n)).map(([i, j]) => {
-        rectData.push({
-          width: plotAreaWidth / 3,
-          height: plotAreaHeight / 3,
-          x: i * (plotAreaWidth / 3),
-          y: (this.n - 1 - j) * (plotAreaHeight / 3),
-          x1: i * (plotAreaWidth / 3) + plotAreaWidth / 3,
-          y1: (this.n - 1 - j) * (plotAreaHeight / 3) + plotAreaHeight / 3,
-          fill: this.colors[j * this.n + i],
-        });
-      });
-      return rectData;
+        .domain([this.dataMinVaccines, this.dataMaxVaccines]);
     },
   },
   watch: {
-    combinedData: {
+    data: {
       handler() {
         this.drawScatterPlot();
-      },
-
-      deep: true,
-    },
-    selectedYear: {
-      handler() {
-        this.resetBrush();
       },
 
       deep: true,

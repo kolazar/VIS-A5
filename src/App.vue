@@ -12,20 +12,27 @@
         </div>
       </div> -->
       <div class="row">
-        <!-- <div class="col-md-6">
+          <h2 id="loading-message">Loading...</h2>
+
+        <div  id="hide-screen" class="col-md-12" >
+        
+          <div class="row">
+            <!-- <div class="col-md-7">
           <LineChart1 />
-        </div>
-        <div class="col-md-6">
-          <Scatterplot />
         </div>-->
-      </div> 
-      <div class="row">
-        <div class="col-md-7">
-          <ChoroplethMap />
-        </div>
-        <!-- <div class="col-md-5">
+        <div class="col-md-5">
+          <Scatterplot />
+        </div> 
+          </div>
+          <div class="row">
+            <div class="col-md-7">
+              <ChoroplethMap />
+            </div>
+            <!-- <div class="col-md-5">
           <LineChart2 />
         </div> -->
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -35,14 +42,14 @@
 // import BarChart from './components/BarChart.vue';
 import ChoroplethMap from "./components/ChoroplethMap.vue";
 // import YearSlider from './components/YearSlider.vue';
-// import Scatterplot from "./components/Scatterplot.vue";
+import Scatterplot from "./components/Scatterplot.vue";
 // import LineChart1 from "./components/Scatterplot.vue";
 // import LineChart2 from "./components/Scatterplot.vue";
 
 export default {
   name: "App",
   components: {
-    // Scatterplot,
+    Scatterplot,
     ChoroplethMap,
     // LineChart1,
     // LineChart2,
@@ -61,5 +68,9 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 20px;
+}
+
+#hide-screen {
+  /* display: none; */
 }
 </style>
