@@ -17,9 +17,9 @@
         <div  id="hide-screen" class="col-md-12" >
         
           <div class="row">
-            <!-- <div class="col-md-7">
+            <div class="col-md-7">
           <LineChart1 />
-        </div>-->
+        </div>
         <div class="col-md-5">
           <Scatterplot />
         </div> 
@@ -28,9 +28,9 @@
             <div class="col-md-7">
               <ChoroplethMap />
             </div>
-            <!-- <div class="col-md-5">
+            <div class="col-md-5">
           <LineChart2 />
-        </div> -->
+        </div> 
           </div>
         </div>
       </div>
@@ -43,16 +43,16 @@
 import ChoroplethMap from "./components/ChoroplethMap.vue";
 // import YearSlider from './components/YearSlider.vue';
 import Scatterplot from "./components/Scatterplot.vue";
-// import LineChart1 from "./components/Scatterplot.vue";
-// import LineChart2 from "./components/Scatterplot.vue";
+import LineChart1 from "./components/LineChart1.vue";
+import LineChart2 from "./components/LineChart2.vue";
 
 export default {
   name: "App",
   components: {
     Scatterplot,
     ChoroplethMap,
-    // LineChart1,
-    // LineChart2,
+    LineChart1,
+    LineChart2,
   },
   mounted() {
     this.$store.dispatch("loadData");

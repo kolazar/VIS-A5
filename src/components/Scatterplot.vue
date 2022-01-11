@@ -106,8 +106,7 @@ export default {
 
       // d3.select(this.$refs.brush).call(brush);
 
-      let sumstat = d3.group(this.data, (d) => d.isoCode);
-      console.log(sumstat);
+      // let sumstat = d3.group(this.data, (d) => d.isoCode);
 
       let circlesGroup = d3
         .select(this.$refs.circles)
@@ -166,7 +165,7 @@ export default {
     },
     data: {
       get() {
-        return this.$store.getters.data;
+        return this.$store.getters.newDeathsVaccines;
       },
     },
     dataMaxDeaths() {

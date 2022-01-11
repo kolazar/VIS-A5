@@ -81,16 +81,16 @@ export default {
       //   .append(legend)
       //   .attr("transform", "translate(95,510)");
 
-      // Draw the map
       d3.select(this.$refs.chartGroup)
-        .append("g")
+        .attr(
+          "transform",
+          `translate(${this.svgPadding.left},${this.svgPadding.top})`
+        )
         .selectAll("path")
         .data(mapWorld.features)
         .join("path")
-        // draw each country
         .attr("d", path)
         .attr("class", (d) => d.id)
-        // set the color of each country
         .attr("fill", (d) => {
           return color(data.get(d.id));
         })
@@ -135,6 +135,13 @@ export default {
         return this.$store.getters.cardioDiabetes;
       },
     },
+    // x() {
+    //   return;
+    // },
+
+    // y() {
+    //   return;
+    // },
     rectangularProps() {
       let rectData = [];
       let plotAreaWidth = 40;

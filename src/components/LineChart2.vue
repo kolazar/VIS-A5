@@ -1,20 +1,16 @@
 <template>
   <div class="vis-component" ref="chart">
     <svg class="main-svg" :width="svgWidth" :height="svgHeight">
-      <g class="chart-group" ref="chartGroup">
-        <g class="map-group" ref="mapGroup"></g>
-        <rect class="empty-area" :width="svgWidth" :height="svgHeight"></rect>
-      </g>
+      <g class="chart-group" ref="chartGroup"></g>
     </svg>
   </div>
 </template>
 
 <script>
 import * as d3 from "d3";
-import mapStatesUSA from "@/assets/us-states-geo.json";
 
 export default {
-  name: "ChoroplethMap",
+  name: "LineChart2",
   props: {},
   data() {
     return {
@@ -40,79 +36,90 @@ export default {
     };
   },
   mounted() {
-    this.drawMap();
+    this.drawLineChart2();
   },
   methods: {
-    drawMap() {
+    drawLineChart2() {
       if (this.$refs.chart) this.svgWidth = this.$refs.chart.clientWidth;
 
-      let projection = d3
-        .geoAlbersUsa()
-        .scale([this.svgWidth])
-        .translate([this.svgWidth / 2.1, this.svgHeight / 2.1]);
-
-      let path = d3.geoPath().projection(projection);
-
-      d3.select(this.$refs.chartGroup)
+      let svg = d3
+        .select(this.$refs.chartGroup)
         .attr(
           "transform",
-          `translate(${this.svgPadding.left},${this.svgPadding.top})`
-        )
-        .selectAll("path")
-        .data(mapStatesUSA.features)
-        .join("path")
-        .attr("d", path)
-        .data(this.combinedData)
-        .attr("fill", (d) => {
-          if (!d) {
-            return "#ccc";
-          } else if (d.filtered) {
-            return "#ddd";
-          } else {
-            return d3.select(`.${d.state.replace(/ /g, ".")}`).attr("fill");
-          }
-        })
-        .style("stroke", "#fff")
-        .style("stroke-width", 1)
-        .on("click", (event, d) => this.handleStateClick(d.state));
+          `translate(${this.svgPadding.left} ,${this.svgPadding.top})`
+        );
 
-      d3.select(".empty-area").on("click", () =>
-        this.handleStateDeactivation()
-      );
-    },
-    handleStateClick(val) {
-      d3.select(`.${val.replace(/ /g, ".")}`)
-        .style("stroke-width", 4)
-        .style("stroke", "orange");
-    },
-    handleStateDeactivation() {
-      d3.selectAll("circle")
-        .data(this.combinedData)
-        .attr("fill", (d) => {
-          if (!d) return "#ccc";
-          return d3.select(`.${d.state.replace(/ /g, ".")}`).attr("fill");
-        })
-        .style("opacity", function (d) {
-          return d.filtered ? 0.5 : 1;
-        })
-        .style("stroke-width", function (d) {
-          return d.filtered ? 1 : 2;
-        })
-        .style("stroke", "#fff");
+      let x = d3
+        .scaleTime()
+        .domain(
+          d3.extent(this.lineChartData, function (d) {
+            return d.date;
+          })
+        )
+        .range([0, this.svgWidth - this.svgPadding.left - this.svgPadding.right]);
+
+      svg
+        .append("g")
+        .attr("transform", `translate(0,${
+            this.svgHeight - this.svgPadding.top - this.svgPadding.bottom
+          })`)
+        .call(d3.axisBottom(x));
+
+
+let groupByDay = d3.rollup(this.lineChartData, v => d3.mean(v, d=>d.policy),d=>d.date)
+
+
+      let y = d3
+        .scaleLinear()
+        .domain([
+          0,
+          d3.max(groupByDay, function (d) {
+            return d[1];
+          }),
+        ])
+        .range([this.svgHeight- this.svgPadding.top - this.svgPadding.bottom, 0]);
+
+      svg.append("g")
+      .call(d3.axisLeft(y));
+
+// let lineChart2DataByCountry = d3.group(this.lineChart2Data, d=>d.date)
+ console.log(groupByDay)
+      svg
+        .append("path")
+        .datum(groupByDay)
+        .attr("fill", "none")
+        .attr("stroke", "steelblue")
+        .attr("stroke-width", 1.5)
+        .attr(
+          "d",
+          d3
+            .line()
+            .x(function (d) {
+             return x(d[0])
+            })
+            .y(function (d) {
+              return y(d[1]);
+            }))
+        
+
+      // .append("title")
+      // .text((d) => {
+      //   return `${d.countryName}`;
+      // });
     },
   },
   computed: {
-    combinedData: {
+    lineChartData: {
       get() {
-        return this.$store.getters.combinedData;
+        return this.$store.getters.lineChartData;
       },
     },
   },
 
   watch: {
-    combinedData: {
+    lineChartData: {
       handler() {
-        this.drawMap();
+        this.drawLineChart2();
       },
       deep: true,
     },
@@ -121,10 +128,4 @@ export default {
 </script>
 
 <style>
-.empty-area {
-  opacity: 0;
-  /* stroke: rgb(0, 0, 0);
-  stroke-width: 1;
-  fill: white; */
-}
 </style>
