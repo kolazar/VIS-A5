@@ -47,7 +47,6 @@ export default {
   methods: {
     drawMap() {
       if (this.$refs.chart) this.svgWidth = this.$refs.chart.clientWidth;
-      // Map and projection
 
       let projection = d3
         .geoMercator()
@@ -59,27 +58,9 @@ export default {
 
       let data = this.data;
 
-      let x = d3.scaleQuantile(
-        Array.from(data.values(), (d) => d[0]),
-        d3.range(this.n)
-      );
-
-      let y = d3.scaleQuantile(
-        Array.from(data.values(), (d) => d[1]),
-        d3.range(this.n)
-      );
-
       // let labels = ["low", "medium", "high"]
 
-      let color = (value) => {
-        if (!value) return "#001";
-        let [a, b] = value;
-        return this.colors[y(b) + x(a) * this.n];
-      };
-
-      // d3.select(this.$refs.chartGroup)
-      //   .append(legend)
-      //   .attr("transform", "translate(95,510)");
+      d3.selectAll("title").remove();
 
       d3.select(this.$refs.chartGroup)
         .attr(
@@ -92,7 +73,7 @@ export default {
         .attr("d", path)
         .attr("class", (d) => d.id)
         .attr("fill", (d) => {
-          return color(data.get(d.id));
+          return this.color(data.get(d.id));
         })
         .append("title")
         .text((d) => {
@@ -100,6 +81,10 @@ export default {
         });
     },
     drawLegend() {
+      // d3.select(this.$refs.chartGroup)
+      //   .append(legend)
+      //   .attr("transform", "translate(95,510)");
+
       d3.select(this.$refs.rects)
         .append("text")
         .attr("font-weight", "bold")
@@ -135,13 +120,19 @@ export default {
         return this.$store.getters.cardioDiabetes;
       },
     },
-    // x() {
-    //   return;
-    // },
+    x() {
+      return d3.scaleQuantile(
+        Array.from(this.data.values(), (d) => d[0]),
+        d3.range(this.n)
+      );
+    },
 
-    // y() {
-    //   return;
-    // },
+    y() {
+      return d3.scaleQuantile(
+        Array.from(this.data.values(), (d) => d[1]),
+        d3.range(this.n)
+      );
+    },
     rectangularProps() {
       let rectData = [];
       let plotAreaWidth = 40;
@@ -160,6 +151,13 @@ export default {
         });
       });
       return rectData;
+    },
+    color() {
+      return (value) => {
+        if (!value) return "#001";
+        let [a, b] = value;
+        return this.colors[this.y(b) + this.x(a) * this.n];
+      };
     },
   },
 

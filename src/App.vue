@@ -6,6 +6,11 @@
           <h1>COVID-19 Dashboard</h1>
         </div>
       </div>
+      <div class="row">
+        <div class="col-md-12">
+          Control Plane
+        </div>
+      </div>
       <!-- <div class="row">
         <div class="col-md-12">
           <YearSlider/>

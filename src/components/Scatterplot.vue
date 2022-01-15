@@ -89,7 +89,6 @@ export default {
         .attr("fill", "black")
         .text("New vaccines smoothed per million");
     },
-
     drawCircles() {
       // let brush = d3
       //   .brush()
@@ -107,6 +106,8 @@ export default {
       // d3.select(this.$refs.brush).call(brush);
 
       // let sumstat = d3.group(this.data, (d) => d.isoCode);
+
+console.log(this.data);
 
       let circlesGroup = d3
         .select(this.$refs.circles)
@@ -181,7 +182,8 @@ export default {
           0,
           this.svgWidth - this.svgPadding.left - this.svgPadding.right,
         ])
-        .domain([this.dataMinDeaths, this.dataMaxDeaths]);
+        .domain([this.dataMinDeaths, this.dataMaxDeaths])
+        .nice();
     },
 
     dataMaxVaccines() {
@@ -197,7 +199,8 @@ export default {
           this.svgHeight - this.svgPadding.top - this.svgPadding.bottom,
           0,
         ])
-        .domain([this.dataMinVaccines, this.dataMaxVaccines]);
+        .domain([this.dataMinVaccines, this.dataMaxVaccines])
+        .nice();
     },
   },
   watch: {

@@ -83,7 +83,6 @@ let groupByDay = d3.rollup(this.lineChartData, v => d3.mean(v, d=>d.policy),d=>d
       .call(d3.axisLeft(y));
 
 // let lineChart2DataByCountry = d3.group(this.lineChart2Data, d=>d.date)
- console.log(groupByDay)
       svg
         .append("path")
         .datum(groupByDay)

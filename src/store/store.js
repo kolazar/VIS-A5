@@ -12,6 +12,7 @@ const store = new Vuex.Store({
     newDeathsVaccines: [],
     data: [],
     lineChartData: [],
+    data2: []
   },
   mutations: {
     changeSelectedYear(state, year) {
@@ -108,25 +109,35 @@ const store = new Vuex.Store({
 
       let result = []
 
-      const keys = Object.keys(state.data);
-      console.log(state.data);
+      let keys = Object.keys(state.data);
 
       keys.forEach((key) => {
         for (let i = 0; i < state.data[key].data.length; i++) {
 
-          result.push({
+          if (!(key.startsWith("OWID"))) {
 
-            isoCode: key,
-            countryName: state.data[key].location,
-            date: d3.timeParse("%Y-%m-%d")(state.data[key].data[i].date),
-            newCasesSmoothedMillion: state.data[key].data[i].new_cases_smoothed_per_million,
-            newVaccinesSmoothedMillion: state.data[key].data[i].new_vaccinations_smoothed_per_million,
-            policy: state.data[key].data[i].stringency_index,
-          })
+            result.push({
+
+              isoCode: key,
+              countryName: state.data[key].location,
+              date: d3.timeParse("%Y-%m-%d")(state.data[key].data[i].date),
+              newCasesSmoothedMillion: state.data[key].data[i].new_cases_smoothed_per_million,
+              newVaccinesSmoothedMillion: state.data[key].data[i].new_vaccinations_smoothed_per_million,
+              newDeathsSmoothedMillion: state.data[key].data[i].new_deaths_smoothed_per_million,
+              policy: state.data[key].data[i].stringency_index,
+            })
+          }
+        }
+        function sortByDateAscending(a, b) {
+          return a.date - b.date;
         }
 
+        result = result.sort(sortByDateAscending);
 
       })
+      console.log(result);
+      Object.freeze(result);
+
       return result;
     },
   },
@@ -144,8 +155,12 @@ const store = new Vuex.Store({
       })
 
       // d3.csv('./owid-covid-data.csv').then((d) => {
-      //   state.data = d;
-      //   document.getElementById('loading-message').remove();
+
+      //   Object.freeze(d);
+      //   state.data2 = d;
+
+
+      //   // document.getElementById('loading-message').remove();
       //   // document.getElementById('hide-screen').style.display = "block";
       // })
 
@@ -158,6 +173,7 @@ const store = new Vuex.Store({
       // })
 
       d3.json('./owid-covid-data.json').then((d) => {
+        Object.freeze(d);
         state.data = d;
         document.getElementById('loading-message').remove();
 
