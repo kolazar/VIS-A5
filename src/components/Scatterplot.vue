@@ -107,7 +107,6 @@ export default {
 
       // let sumstat = d3.group(this.data, (d) => d.isoCode);
 
-console.log(this.data);
 
       let circlesGroup = d3
         .select(this.$refs.circles)

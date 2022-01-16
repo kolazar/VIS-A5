@@ -6,7 +6,7 @@ Vue.use(Vuex);
 
 const store = new Vuex.Store({
   state: {
-    selectedYear: 2006,
+    selectedMonth: "January",
     selectedStates: [],
     cardioDiabetes: [],
     newDeathsVaccines: [],
@@ -15,8 +15,9 @@ const store = new Vuex.Store({
     data2: []
   },
   mutations: {
-    changeSelectedYear(state, year) {
-      state.selectedYear = year;
+    changeSelectedMonth(state, month) {
+      state.selectedMonth = month;
+      console.log(state.selectedMonth);
     },
     changeSelectedState(state, val) {
       state.selectedStates.push(val);
@@ -25,7 +26,7 @@ const store = new Vuex.Store({
 
   },
   getters: {
-    selectedYear: (state) => state.selectedYear,
+    selectedYear: (state) => state.selectedMonth,
     selectedStates: (state) => state.selectedStates,
     cardioDiabetes(state) {
       let result = new Map();
@@ -39,12 +40,16 @@ const store = new Vuex.Store({
     newDeathsVaccines(state) {
       let result = [];
       for (let i = 0; i < state.newDeathsVaccines.length; i++) {
+            
+
+
+
         result.push({
           isoCode: state.newDeathsVaccines[i].iso_code,
           countryName: state.newDeathsVaccines[i].location,
           date: new Date(state.newDeathsVaccines[i].date),
           newDeaths: +state.newDeathsVaccines[i].new_deaths_smoothed_per_million,
-          newVaccinations: +state.newDeathsVaccines[i].new_vaccinations_smoothed_per_million,
+          newVaccinations: state.newDeathsVaccines[i].new_vaccinations_smoothed_per_million === "undefined" ? "undefined": +state.newDeathsVaccines[i].new_vaccinations_smoothed_per_million,
         })
       }
 
