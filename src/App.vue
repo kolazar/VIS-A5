@@ -7,9 +7,7 @@
         </div>
       </div>
       <div class="row">
-        <div class="col-md-12">
-          Control Plane
-        </div>
+        <div class="col-md-12">Control Plane</div>
       </div>
       <!-- <div class="row">
         <div class="col-md-12">
@@ -17,28 +15,28 @@
         </div>
       </div> -->
       <div class="row">
-          <h2 id="loading-message">Loading...</h2>
+        <h2 id="loading-message">Loading...</h2>
+</div>
+          <!-- <div id="hide-screen" class="col-md-12" style = "display: none"> -->
 
-        <div  id="hide-screen" class="col-md-12" >
-        
           <div class="row">
             <div class="col-md-7">
-          <LineChart1 />
-        </div>
-        <div class="col-md-5">
-          <Scatterplot />
-        </div> 
+              <LineChart1 />
+            </div>
+            <div class="col-md-5">
+              <Scatterplot />
+            </div>
           </div>
           <div class="row">
             <div class="col-md-7">
               <ChoroplethMap />
             </div>
             <div class="col-md-5">
-          <LineChart2 />
-        </div> 
+              <LineChart2 />
+            </div>
           </div>
-        </div>
-      </div>
+        <!-- </div> -->
+      
     </div>
   </div>
 </template>
@@ -49,7 +47,7 @@ import ChoroplethMap from "./components/ChoroplethMap.vue";
 // import YearSlider from './components/YearSlider.vue';
 import Scatterplot from "./components/Scatterplot.vue";
 import LineChart1 from "./components/LineChart1.vue";
-import LineChart2 from "./components/LineChart2.vue";
+// import LineChart2 from "./components/LineChart2.vue";
 
 export default {
   name: "App",
@@ -57,7 +55,7 @@ export default {
     Scatterplot,
     ChoroplethMap,
     LineChart1,
-    LineChart2,
+    // LineChart2,
   },
   mounted() {
     this.$store.dispatch("loadData");

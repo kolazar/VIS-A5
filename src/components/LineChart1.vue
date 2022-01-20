@@ -14,17 +14,6 @@ export default {
   props: {},
   data() {
     return {
-      colors: [
-        "#b3b2b2",
-        "#e4acac",
-        "#c85a5a",
-        "#b0d5df",
-        "#907881",
-        "#985356",
-        "#64acbe",
-        "#627f8c",
-        "#574249",
-      ],
       svgWidth: 500,
       svgHeight: 500,
       svgPadding: {
@@ -36,10 +25,11 @@ export default {
     };
   },
   mounted() {
-    this.drawLineChart1();
+    this.drawAllCountriesLine();
+    this.createTooltip();
   },
   methods: {
-    drawLineChart1() {
+    drawAllCountriesLine() {
       if (this.$refs.chart) this.svgWidth = this.$refs.chart.clientWidth;
 
       // d3.select(".focus").remove();
@@ -76,7 +66,7 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
       // let valuesToSum = ["newCasesSmoothedMillion", "newVaccinesSmoothedMillion"];
 
       // let groupByDayMap = d3.rollup(
-      //   this.lineChart1Data,
+      //   this.data,
       //   (v) =>
       //     Object.fromEntries(
       //       valuesToSum.map((col) => [col, d3.sum(v, (d) => d[col])])
@@ -87,9 +77,14 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
       // let normalized = (groupByDayMap, d=>{return (d[1].newCasesSmoothedMillion-d3.min(groupByDayMap[1].newCasesSmoothedMillion))/(d3.max(groupByDayMap[1].newCasesSmoothedMillion)-d3.min(groupByDayMap[1].newCasesSmoothedMillion))})
       // console.log(normalized);
 
+
+let groupByMonthYear=this.data
+console.log(groupByMonthYear);
+
       this.svg
         .append("path")
-        .datum(this.groupByDayMap)
+        .datum(groupByMonthYear)
+        .attr("class", "all-countries")
         .attr("fill", "none")
         .attr("stroke", "steelblue")
         .attr("stroke-width", 1.5)
@@ -97,55 +92,15 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
           "d",
           d3
             .line()
-            .x((d) => {
-              return this.x(d[0]);
-            })
-            .y((d) => {
-              return this.y(d[1]);
-              // return y(d[1].newCasesSmoothedMillion);
-            })
+            .x((d) => this.x(d3.timeParse("%m/%Y")(d[0])))
+            .y((d) => this.y(d[1]))
+            .curve(d3.curveNatural)
         );
 
       // .append("title")
       // .text((d) => {
       //   return `${d[1]}`;
       // });
-
-      this.focus.append("circle").attr("r", 5);
-
-      this.focus
-        .append("rect")
-        .attr("class", "tooltip-frame")
-        .attr("width", 150)
-        .attr("height", 50)
-        .attr("x", -160)
-        .attr("y", -22)
-        .attr("rx", 4)
-        .attr("ry", 4);
-
-      this.focus
-        .append("text")
-        .attr("class", "tooltip-date")
-        .attr("x", -150)
-        .attr("y", -2);
-
-      this.focus.append("text").attr("x", -150).attr("y", 18).text("New Cases:");
-
-      this.focus
-        .append("text")
-        .attr("class", "tooltip-info")
-        .attr("x", -70)
-        .attr("y", 18);
-
-      this.svg
-        .append("rect")
-        .attr("class", "overlay")
-        .attr("width", this.svgWidth)
-        .attr("height", this.svgHeight)
-        .on("mouseover", () => this.focus.style("display", null))
-        .on("mouseout", () => this.focus.style("display", "none"))
-        .on("mousemove", () => this.mouseMove(this.groupByDayArray))
-        .on("click", ()=>this.mouseClick(this.groupByDayArray));
 
       // svg
       //   .append("path")
@@ -170,67 +125,177 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
       //     return `${d[1]}`;
       //   });
     },
-    mouseMove(data) {
 
+    drawOneCountryLine() {
+      console.log("hello");
+
+      
+
+for (let index = 0; index < this.data.length; index++) {
+   if (this.selectedCountries.includes(this.data[index].countryName)) {
+        console.log("it works");
+        this.svg
+          .append("path")
+          .datum(this.groupByMonthYear)
+          .attr("fill", "none")
+          .attr("stroke", "steelblue")
+          .attr("stroke-width", 1.5)
+          .attr(
+            "d",
+            d3
+              .line()
+              .x((d) => this.x(d3.timeParse("%m/%Y")(d[0])))
+              .y((d) => this.y(d[1]))
+              .curve(d3.curveNatural)
+          );
+      }
+  
+}
+
+     
+    },
+
+    createTooltip() {
+      this.focus.append("circle").attr("r", 5);
+
+      this.focus
+        .append("rect")
+        .attr("class", "tooltip-frame")
+        .attr("width", 150)
+        .attr("height", 50)
+        .attr("x", -160)
+        .attr("y", -22)
+        .attr("rx", 4)
+        .attr("ry", 4);
+
+      this.focus
+        .append("text")
+        .attr("class", "tooltip-date")
+        .attr("x", -150)
+        .attr("y", -2);
+
+      this.focus
+        .append("text")
+        .attr("x", -150)
+        .attr("y", 18)
+        .text("New Cases:");
+
+      this.focus
+        .append("text")
+        .attr("class", "tooltip-info")
+        .attr("x", -70)
+        .attr("y", 18);
+
+      this.svg
+        .append("rect")
+        .attr("class", "overlay")
+        .attr(
+          "width",
+          this.svgWidth - this.svgPadding.left - this.svgPadding.right
+        )
+        .attr(
+          "height",
+          this.svgHeight - this.svgPadding.top - this.svgPadding.bottom
+        )
+        .on("mouseover", () => this.focus.style("display", null))
+        .on("mouseout", () => this.focus.style("display", "none"))
+        .on("mousemove", () => this.mouseMove(this.groupByMonthYearArray))
+        .on("click", () => this.mouseClick(this.groupByMonthYearArray));
+    },
+    mouseMove(data) {
       let formatValue = d3.format(",.0f");
-      let dateFormatter = d3.timeFormat("%d/%m/%Y");
       let x0 = this.x.invert(d3.pointer(event)[0]),
         bisectDate = d3.bisector((d) => {
-          return d.date;
+          return this.dateParser(d.date);
         }).left,
         i = bisectDate(data, x0, 1),
         d0 = data[i - 1],
         d1 = data[i],
-        d = x0 - d0.date > d1.date - x0 ? d1 : d0;
-
+        d =
+          x0 - this.dateParser(d0.date) > this.dateParser(d1.date) - x0
+            ? d1
+            : d0;
       this.focus
         .attr(
           "transform",
-          "translate(" + this.x(d.date) + "," + this.y(d.value) + ")"
+          "translate(" +
+            this.x(this.dateParser(d.date)) +
+            "," +
+            this.y(d.value) +
+            ")"
         )
         .select(".tooltip-date")
-        .text(dateFormatter(d.date));
+        .text(d.date);
       this.focus.select(".tooltip-info").text(formatValue(d.value));
     },
-    mouseClick(data){
-let x0 = this.x.invert(d3.pointer(event)[0]),
-        bisectDate = d3.bisector((d) => {
-          return d.date;
-        }).left,
+    mouseClick(data) {
+      let x0 = this.x.invert(d3.pointer(event)[0]),
+        bisectDate = d3.bisector((d) => this.dateParser(d.date)).left,
         i = bisectDate(data, x0, 1),
         d0 = data[i - 1],
         d1 = data[i],
-        d = x0 - d0.date > d1.date - x0 ? d1 : d0;
+        d =
+          x0 - this.dateParser(d0.date) > this.dateParser(d1.date) - x0
+            ? d1
+            : d0;
 
-
-      this.$store.commit("changeSelectedMonth", d.date);
-
-
-
-    }
+      this.$store.commit("changeSelectedDate", d.date);
+      // this.$store.commit("changeSelectedDate", d.date);
+      // this.$store.commit("changeSelectedYear", d.date.getFullYear());
+    },
   },
   computed: {
-    lineChart1Data: {
+    data: {
       get() {
-        return this.$store.getters.lineChartData;
+        return this.$store.getters.lineChart1Data;
       },
     },
-    groupByDayMap() {
+
+  lineSpecificCountryData:{
+    get() {
+        return this.$store.getters.lineSpecificCountryData;
+      },
+    
+  },
+
+    selectedCountries: {
+      get() {
+        return this.$store.getters.selectedCountries;
+      },
+    },
+groupByMonthYearSpecificCountry() {
       return d3.rollup(
-        this.lineChart1Data,
+        this.data,
         (v) =>
           d3.sum(v, (d) => {
             if (typeof d.newCasesSmoothedMillion !== "undefined")
               return d.newCasesSmoothedMillion;
           }),
-        (d) => d.date
+        (d) => d.monthYear
       );
     },
-    groupByDayArray(){
-  let array = Array.from(this.groupByDayMap, ([date, value]) => ({ date, value }));
-  return array;
-    },
 
+    groupByMonthYear:
+    {
+      set(data) {
+      console.log(data);
+      return d3.rollup(
+        data,
+        (v) =>
+          d3.sum(v, (d) => {
+            if (typeof d.newCasesSmoothedMillion !== "undefined")
+              return d.newCasesSmoothedMillion;
+          }),
+        (d) => d.monthYear
+      );
+    },
+    },
+    groupByMonthYearArray() {
+      return Array.from(this.groupByMonthYear, ([date, value]) => ({
+        date,
+        value,
+      }));
+    },
 
     svg() {
       return d3
@@ -244,9 +309,9 @@ let x0 = this.x.invert(d3.pointer(event)[0]),
       return d3
         .scaleTime()
         .domain(
-          d3.extent(this.lineChart1Data, function (d) {
-            return d.date;
-          })
+          d3.extent(this.groupByMonthYearArray, (d) =>
+            d3.timeParse("%m/%Y")(d.date)
+          )
         )
         .range([
           0,
@@ -257,13 +322,7 @@ let x0 = this.x.invert(d3.pointer(event)[0]),
     y() {
       return d3
         .scaleLinear()
-        .domain([
-          0,
-          // d3.max(groupByDayMap, function (d) {
-          //  return d[1].newCasesSmoothedMillion > d[1].newVaccinesSmoothedMillion ? d[1].newCasesSmoothedMillion : d[1].newVaccinesSmoothedMillion
-          // }),
-          d3.max(this.groupByDayMap, (d) => d[1]),
-        ])
+        .domain([0, d3.max(this.groupByMonthYear(this.data), (d) => d[1])])
         .range([
           this.svgHeight - this.svgPadding.top - this.svgPadding.bottom,
           0,
@@ -271,24 +330,28 @@ let x0 = this.x.invert(d3.pointer(event)[0]),
         .nice();
     },
 
-    
-
     focus() {
       return this.svg
         .append("g")
         .attr("class", "focus")
-        .style("display", "none");
+        .style("display", "none")
+        .raise();
     },
-
-    // bisectDate() {
-    //   return d3.bisectLeft((d) => d.date);
-    // },
+    dateParser() {
+      return d3.timeParse("%m/%Y");
+    },
   },
 
   watch: {
-    lineChart1Data: {
+    data: {
       handler() {
-        this.drawLineChart1();
+        this.drawAllCountriesLine();
+      },
+      deep: true,
+    },
+    selectedCountries: {
+      handler() {
+        this.drawOneCountryLine();
       },
       deep: true,
     },

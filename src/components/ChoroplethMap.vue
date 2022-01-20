@@ -77,6 +77,7 @@ export default {
         })
         .append("title")
         .text((d) => {
+
           return `${d.id}, ${data.get(d.id)}`;
         });
     },
@@ -117,7 +118,7 @@ export default {
   computed: {
     data: {
       get() {
-        return this.$store.getters.cardioDiabetes;
+        return this.$store.getters.choroplethMapData;
       },
     },
     x() {

@@ -6,55 +6,205 @@ Vue.use(Vuex);
 
 const store = new Vuex.Store({
   state: {
-    selectedMonth: "January",
-    selectedStates: [],
-    cardioDiabetes: [],
-    newDeathsVaccines: [],
+    selectedDate: "12/2021",
+    selectedCountries: [],
+    choroplethMapData: [],
     data: [],
-    lineChartData: [],
-    data2: []
+    showAllCountries: true,
   },
   mutations: {
-    changeSelectedMonth(state, month) {
-      state.selectedMonth = month;
-      console.log(state.selectedMonth);
+
+    changeSelectedDate(state, date) {
+      state.selectedDate = date;
+
     },
-    changeSelectedState(state, val) {
-      state.selectedStates.push(val);
+    addSelectedCountry(state, val) {
+      state.showAllCountries = false
+
+      state.selectedCountries.push(val);
+    },
+    deleteSelectedCountry(state, val) {
+      state.showAllCountries = false
+
+      const index = state.selectedCountries.indexOf(val);
+      if (index > -1) {
+        state.selectedCountries.splice(index, 1);
+      }
+
     },
 
 
   },
   getters: {
-    selectedYear: (state) => state.selectedMonth,
-    selectedStates: (state) => state.selectedStates,
-    cardioDiabetes(state) {
+
+    selectedDate: (state) => state.selectedDate,
+    selectedCountries: (state) => state.selectedCountries,
+
+    scatterPlotData(state) {
+      let result = []
+
+
+
+      for (let i = 0; i < state.data.length; i++) {
+
+
+        if (+state.selectedDate.split("/")[0] === d3.timeParse("%d/%m/%Y")(state.data[i].date).getMonth() + 1
+          && +state.selectedDate.split("/")[1] === d3.timeParse("%d/%m/%Y")(state.data[i].date).getFullYear()
+          && !(state.data[i].iso_code.startsWith("OWID"))) {
+
+          result.push({
+            isoCode: state.data[i].iso_code,
+            countryName: state.data[i].location,
+            date: d3.timeParse("%d/%m/%Y")(state.data[i].date),
+            newDeathsSmoothedMillion: +state.data[i].new_deaths_smoothed_per_million > 0
+              ? +state.data[i].new_deaths_smoothed_per_million
+              : undefined,
+            newVaccinesSmoothedMillion: +state.data[i].new_vaccinations_smoothed_per_million,
+            newCasesSmoothedMillion: +state.data[i].new_cases_smoothed_per_million,
+
+          })
+        }
+
+
+      }
+      let valuesToSum = ["newDeathsSmoothedMillion", "newVaccinesSmoothedMillion"];
+      let resultMap = d3.rollup(
+        result,
+        (v) =>
+          Object.fromEntries(
+            valuesToSum.map((col) => [col, d3.sum(v, (d) => d[col])])
+          ),
+        (d) => d.isoCode
+      );
+
+
+
+      let array = Array.from(resultMap, ([countryName, value]) => ({ countryName, value }));
+      let finalResult = []
+      for (let i = 0; i < array.length; i++) {
+        finalResult.push({
+          countryName: array[i].countryName,
+          newDeathsSmoothedMillion: array[i].value.newDeathsSmoothedMillion,
+          newVaccinesSmoothedMillion: array[i].value.newVaccinesSmoothedMillion,
+          isoCode: ""
+        })
+
+      }
+
+      return finalResult;
+    },
+
+
+    choroplethMapData(state) {
       let result = new Map();
-      for (let i = 0; i < state.cardioDiabetes.length; i++) {
-        result.set(state.cardioDiabetes[i].iso_code,
-          [+state.cardioDiabetes[i].cardiovasc_death_rate, +state.cardioDiabetes[i].diabetes_prevalence]
+      for (let i = 0; i < state.choroplethMapData.length; i++) {
+        result.set(state.choroplethMapData[i].iso_code,
+          [+state.choroplethMapData[i].cardiovasc_death_rate, +state.choroplethMapData[i].diabetes_prevalence]
         )
       }
       return result;
     },
-    newDeathsVaccines(state) {
+
+    lineChart1Data(state) {
       let result = [];
-      for (let i = 0; i < state.newDeathsVaccines.length; i++) {
-            
 
 
+      let a = [], b = []
 
-        result.push({
-          isoCode: state.newDeathsVaccines[i].iso_code,
-          countryName: state.newDeathsVaccines[i].location,
-          date: new Date(state.newDeathsVaccines[i].date),
-          newDeaths: +state.newDeathsVaccines[i].new_deaths_smoothed_per_million,
-          newVaccinations: state.newDeathsVaccines[i].new_vaccinations_smoothed_per_million === "undefined" ? "undefined": +state.newDeathsVaccines[i].new_vaccinations_smoothed_per_million,
-        })
+
+      state.data.forEach(function (d) {
+        a = d.date.split(" ", 1);
+        b = a[0].split("/");
+        d.year = b[2] * 1;
+        d.month = b[1] * 1;
+        d.day = b[0] * 1;
+
+      })
+
+
+      for (let i = 0; i < state.data.length; i++) {
+
+        if (!(state.data[i].iso_code.startsWith("OWID"))) {
+
+          result.push({
+            isoCode: state.data[i].iso_code,
+            countryName: state.data[i].location,
+            date: d3.timeParse("%d/%m/%Y")(state.data[i].date),
+            newDeathsSmoothedMillion: +state.data[i].new_deaths_smoothed_per_million,
+            newVaccinesSmoothedMillion: +state.data[i].new_vaccinations_smoothed_per_million,
+            newCasesSmoothedMillion: +state.data[i].new_cases_smoothed_per_million,
+            day: state.data[i].day,
+            month: state.data[i].month,
+            year: state.data[i].year,
+            monthYear: state.data[i].month + "/" + state.data[i].year,
+          })
+        }
       }
 
+      function sortByDateAscending(a, b) {
+        return a.date - b.date;
+      }
+
+      result = result.sort(sortByDateAscending);
+
+      Object.freeze(result);
+      console.log(result);
       return result;
     },
+
+    lineSpecificCountryData(state) {
+      let result = [];
+
+
+      let a = [], b = []
+
+
+      state.data.forEach(function (d) {
+        a = d.date.split(" ", 1);
+        b = a[0].split("/");
+        d.year = b[2] * 1;
+        d.month = b[1] * 1;
+        d.day = b[0] * 1;
+
+      })
+
+
+      for (let i = 0; i < state.data.length; i++) {
+
+        if (!(state.data[i].iso_code.startsWith("OWID"))
+          && state.selectedCountries.includes(state.data[i].iso_code)
+
+        ) {
+
+          result.push({
+            isoCode: state.data[i].iso_code,
+            countryName: state.data[i].location,
+            date: d3.timeParse("%d/%m/%Y")(state.data[i].date),
+            newDeathsSmoothedMillion: +state.data[i].new_deaths_smoothed_per_million,
+            newVaccinesSmoothedMillion: +state.data[i].new_vaccinations_smoothed_per_million,
+            newCasesSmoothedMillion: +state.data[i].new_cases_smoothed_per_million,
+            day: state.data[i].day,
+            month: state.data[i].month,
+            year: state.data[i].year,
+            monthYear: state.data[i].month + "/" + state.data[i].year,
+          })
+        }
+      }
+
+      function sortByDateAscending(a, b) {
+        return a.date - b.date;
+      }
+
+      result = result.sort(sortByDateAscending);
+
+      Object.freeze(result);
+      console.log(result);
+      return result;
+    },
+
+
+
+
     // lineChart2Data(state) {
     //   let result = [];
     //   for (let i = 0; i < state.data.length; i++) {
@@ -110,11 +260,23 @@ const store = new Vuex.Store({
     //   return result;
     // },
 
+
+
+
+
+
+
+    /*
+    ==================
+JSON implementation
+    ==================
+    
     lineChartData(state) {
 
       let result = []
 
       let keys = Object.keys(state.data);
+
 
       keys.forEach((key) => {
         for (let i = 0; i < state.data[key].data.length; i++) {
@@ -130,6 +292,7 @@ const store = new Vuex.Store({
               newVaccinesSmoothedMillion: state.data[key].data[i].new_vaccinations_smoothed_per_million,
               newDeathsSmoothedMillion: state.data[key].data[i].new_deaths_smoothed_per_million,
               policy: state.data[key].data[i].stringency_index,
+
             })
           }
         }
@@ -145,6 +308,8 @@ const store = new Vuex.Store({
 
       return result;
     },
+
+    */
   },
   actions: {
     loadData({ state }) {
@@ -152,37 +317,25 @@ const store = new Vuex.Store({
       d3.csv('./owid-covid-data-choropleth.csv')
 
         .then((d) => {
-          state.cardioDiabetes = d;
+          state.choroplethMapData = d;
         })
 
-      d3.csv('./owid-covid-data-scatter.csv').then((d) => {
-        state.newDeathsVaccines = d;
-      })
-
-      // d3.csv('./owid-covid-data.csv').then((d) => {
-
-      //   Object.freeze(d);
-      //   state.data2 = d;
-
-
-      //   // document.getElementById('loading-message').remove();
-      //   // document.getElementById('hide-screen').style.display = "block";
-      // })
-
-
-      // d3.csv('./owid-covid-data-line2.csv').then((d) => {
-
-      // state.lineChart2Data = d;
-      // document.getElementById('loading-message').remove();
-      // document.getElementById('hide-screen').style.display = "block";
-      // })
-
-      d3.json('./owid-covid-data.json').then((d) => {
+      d3.csv('./owid-covid-data-reduced.csv').then((d) => {
         Object.freeze(d);
         state.data = d;
         document.getElementById('loading-message').remove();
-
       })
+
+      // d3.csv('./owid-covid-data-scatter.csv').then((d) => {
+      //   state.lineChart1Data = d;
+      // })
+
+      // d3.json('./owid-covid-data.json').then((d) => {
+      //   Object.freeze(d);
+      //   state.data = d;
+      //   document.getElementById('loading-message').remove();
+      //   // document.getElementById('hide-screen').style.display = null;
+      // })
 
     },
   }

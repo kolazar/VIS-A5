@@ -1,13 +1,13 @@
 <template>
   <div class="vis-component" ref="chart">
-      <div class="tooltip"></div>
-      <svg class="main-svg" :width="svgWidth" :height="svgHeight">
-        <g class="chart-group" ref="chartGroup">
-          <g class="axis axis-x" ref="axisX"></g>
-          <g class="axis axis-y" ref="axisY"></g>
-          <g class="circles-group" ref="circles"></g>
-        </g>
-      </svg>
+    <div class="tooltip"></div>
+    <svg class="main-svg" :width="svgWidth" :height="svgHeight">
+      <g class="chart-group" ref="chartGroup">
+        <g class="axis axis-x" ref="axisX"></g>
+        <g class="axis axis-y" ref="axisY"></g>
+        <g class="circles-group" ref="circles"></g>
+      </g>
+    </svg>
   </div>
 </template>
 
@@ -107,7 +107,6 @@ export default {
 
       // let sumstat = d3.group(this.data, (d) => d.isoCode);
 
-
       let circlesGroup = d3
         .select(this.$refs.circles)
         .selectAll("circle")
@@ -123,20 +122,34 @@ export default {
         .style("stroke", "#fff")
         .merge(circlesGroup)
         .attr("cx", (d) => {
-          return this.xScale(d.newDeaths);
+          return this.xScale(d.newDeathsSmoothedMillion);
         })
-        .attr("cy", (d) => this.yScale(d.newVaccinations))
+        .attr("cy", (d) => {
+          return this.yScale(d.newVaccinesSmoothedMillion);
+        })
         .style("opacity", "0.5")
         .attr("fill", "gray")
+        .on("click", (event, d) => this.mouseClick(d))
         .append("title")
         .text((d) => {
-          return `${d.countryName}, New deaths: ${d.newDeaths},New vaccinations:${d.newVaccinations}`;
-        })
-        // .on("mouseover", () => this.handleCircleMouseHover())
-        // .on("mousemove", (event, d) =>
-        //   this.handleCircleMouseMove(event, d.countryName)
-        // )
-        // .on("mouseleave", () => this.handleCircleMouseOut());
+          return `${d.countryName}, New deaths: ${this.formatValue(
+            d.newDeathsSmoothedMillion
+          )},New vaccinations:${this.formatValue(
+            d.newVaccinesSmoothedMillion
+          )}`;
+        });
+      // .on("mouseover", () => this.handleCircleMouseHover())
+      // .on("mousemove", (event, d) =>
+      //   this.handleCircleMouseMove(event, d.countryName)
+      // )
+      // .on("mouseleave", () => this.handleCircleMouseOut());
+    },
+
+    mouseClick(data) {
+      if (!this.selectedCountries.includes(data.countryName))
+        this.$store.commit("addSelectedCountry", data.countryName);
+        else 
+        this.$store.commit("deleteSelectedCountry", data.countryName);
     },
     // handleCircleMouseHover() {
     //   return d3.select(".tooltip").style("opacity", 1);
@@ -158,21 +171,28 @@ export default {
     // },
   },
   computed: {
-    selectedYear: {
-      get() {
-        return this.$store.getters.selectedYear;
-      },
-    },
+    
     data: {
       get() {
-        return this.$store.getters.newDeathsVaccines;
+        return this.$store.getters.scatterPlotData;
       },
     },
+    selectedDate: {
+      get() {
+        return this.$store.getters.selectedDate;
+      },
+    },
+    selectedCountries: {
+      get() {
+        return this.$store.getters.selectedCountries;
+      },
+    },
+
     dataMaxDeaths() {
-      return d3.max(this.data, (d) => d.newDeaths);
+      return d3.max(this.data, (d) => d.newDeathsSmoothedMillion);
     },
     dataMinDeaths() {
-      return d3.min(this.data, (d) => d.newDeaths);
+      return d3.min(this.data, (d) => d.newDeathsSmoothedMillion);
     },
     xScale() {
       return d3
@@ -186,10 +206,10 @@ export default {
     },
 
     dataMaxVaccines() {
-      return d3.max(this.data, (d) => d.newVaccinations);
+      return d3.max(this.data, (d) => d.newVaccinesSmoothedMillion);
     },
     dataMinVaccines() {
-      return d3.min(this.data, (d) => d.newVaccinations);
+      return d3.min(this.data, (d) => d.newVaccinesSmoothedMillion);
     },
     yScale() {
       return d3
@@ -201,9 +221,19 @@ export default {
         .domain([this.dataMinVaccines, this.dataMaxVaccines])
         .nice();
     },
+    formatValue() {
+      return d3.format(",.1f");
+    },
   },
   watch: {
     data: {
+      handler() {
+        this.drawScatterPlot();
+      },
+
+      deep: true,
+    },
+    selectedDate: {
       handler() {
         this.drawScatterPlot();
       },
