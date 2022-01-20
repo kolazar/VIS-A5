@@ -22,6 +22,7 @@ export default {
         bottom: 50,
         left: 100,
       },
+      maxData: 0,
     };
   },
   mounted() {
@@ -48,10 +49,10 @@ export default {
       this.svg
         .append("g")
         .call(d3.axisLeft(this.y))
+        .attr("class", "yaxis")
         .raise()
         .append("text")
         .attr("transform", "rotate(-90)")
-        .attr("class", "yaxis")
         .attr("x", -6)
         .attr("y", 6)
         .attr("dy", "0.71em")
@@ -77,8 +78,6 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
       // let normalized = (groupByDayMap, d=>{return (d[1].newCasesSmoothedMillion-d3.min(groupByDayMap[1].newCasesSmoothedMillion))/(d3.max(groupByDayMap[1].newCasesSmoothedMillion)-d3.min(groupByDayMap[1].newCasesSmoothedMillion))})
       // console.log(normalized);
 
-     
-      
       this.svg
         .append("path")
         .datum(this.groupByMonthYear)
@@ -126,29 +125,50 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
 
     drawOneCountryLine() {
 
- d3.select(".all-countries").remove();
+d3.select(".yaxis-country").remove();
 
- 
-        let  groupByMonthYearSpecificCountry = this.groupByMonthYearSpecificCountry(this.lineSpecificCountryData)
-          
+      let groupByMonthYearSpecificCountry =
+        this.groupByMonthYearSpecificCountry(this.lineSpecificCountryData);
+      let newMaxData = this.computeMaxData(groupByMonthYearSpecificCountry);
 
-          console.log("it works");
-          console.log(groupByMonthYearSpecificCountry);
-          this.svg
-            .append("path")
-            .datum( groupByMonthYearSpecificCountry)
-            .attr("fill", "none")
-            .attr("stroke", "steelblue")
-            .attr("stroke-width", 1.5)
-            .attr(
-              "d",
-              d3
-                .line()
-                .x((d) => this.x(d3.timeParse("%m/%Y")(d[0])))
-                .y((d) => this.y(d[1]))
-                .curve(d3.curveNatural)
-            );
-       
+      if (this.maxData < newMaxData) {
+        this.maxData = newMaxData;
+      }
+
+      let yForSpecificCountry = this.yForCountry(this.maxData);
+
+      // console.log(groupByMonthYearSpecificCountry);
+      this.svg
+        .append("path")
+        .datum(groupByMonthYearSpecificCountry)
+        .attr("fill", "none")
+        .attr("stroke", "steelblue")
+        .attr("stroke-width", 1.5)
+        .attr(
+          "d",
+          d3
+            .line()
+            .x((d) => this.x(d3.timeParse("%m/%Y")(d[0])))
+            .y((d) => yForSpecificCountry(d[1]))
+            // .curve(d3.curveNatural)
+        );
+
+      this.svg
+        .append("g")
+        .call(d3.axisLeft(yForSpecificCountry))
+        .attr("class", "yaxis-country")
+        .raise()
+        .append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("x", -6)
+        .attr("y", 6)
+        .attr("dy", "0.71em")
+        .attr("text-anchor", "end")
+        .attr("fill", "black")
+        .text("New Cases Smoothed per Million");
+
+      d3.select(".all-countries").remove();
+      d3.select(".yaxis").remove();
     },
 
     createTooltip() {
@@ -241,19 +261,32 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
     },
 
     groupByMonthYearSpecificCountry(data) {
+      return d3.rollup(
+        data,
+        (v) =>
+          d3.sum(v, (d) => {
+            if (typeof d.newCasesSmoothedMillion !== "undefined")
+              return d.newCasesSmoothedMillion;
+          }),
+        (d) => d.monthYear
+      );
+    },
+    computeMaxData(data) {
+      return d3.max(data, (d) => d[1]);
+    },
 
-  
-        return d3.rollup(
-          data,
-          (v) =>
-            d3.sum(v, (d) => {
-              if (typeof d.newCasesSmoothedMillion !== "undefined")
-                return d.newCasesSmoothedMillion;
-            }),
-          (d) => d.monthYear
-        );
-      },
+    yForCountry(max) {
+      return d3
+        .scaleLinear()
+        .domain([0, max])
+        .range([
+          this.svgHeight - this.svgPadding.top - this.svgPadding.bottom,
+          0,
+        ])
+        .nice();
+    },
   },
+
   computed: {
     data: {
       get() {
@@ -272,7 +305,6 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
         return this.$store.getters.selectedCountries;
       },
     },
-    
 
     groupByMonthYear() {
       return d3.rollup(
@@ -313,7 +345,7 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
           this.svgWidth - this.svgPadding.left - this.svgPadding.right,
         ]);
     },
-
+    //TODO: change the scales based on the new values
     y() {
       return d3
         .scaleLinear()
