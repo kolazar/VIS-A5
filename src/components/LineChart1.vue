@@ -77,13 +77,11 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
       // let normalized = (groupByDayMap, d=>{return (d[1].newCasesSmoothedMillion-d3.min(groupByDayMap[1].newCasesSmoothedMillion))/(d3.max(groupByDayMap[1].newCasesSmoothedMillion)-d3.min(groupByDayMap[1].newCasesSmoothedMillion))})
       // console.log(normalized);
 
-
-let groupByMonthYear=this.data
-console.log(groupByMonthYear);
-
+     
+      
       this.svg
         .append("path")
-        .datum(groupByMonthYear)
+        .datum(this.groupByMonthYear)
         .attr("class", "all-countries")
         .attr("fill", "none")
         .attr("stroke", "steelblue")
@@ -127,32 +125,30 @@ console.log(groupByMonthYear);
     },
 
     drawOneCountryLine() {
-      console.log("hello");
 
-      
+ d3.select(".all-countries").remove();
 
-for (let index = 0; index < this.data.length; index++) {
-   if (this.selectedCountries.includes(this.data[index].countryName)) {
-        console.log("it works");
-        this.svg
-          .append("path")
-          .datum(this.groupByMonthYear)
-          .attr("fill", "none")
-          .attr("stroke", "steelblue")
-          .attr("stroke-width", 1.5)
-          .attr(
-            "d",
-            d3
-              .line()
-              .x((d) => this.x(d3.timeParse("%m/%Y")(d[0])))
-              .y((d) => this.y(d[1]))
-              .curve(d3.curveNatural)
-          );
-      }
-  
-}
+ 
+        let  groupByMonthYearSpecificCountry = this.groupByMonthYearSpecificCountry(this.lineSpecificCountryData)
+          
 
-     
+          console.log("it works");
+          console.log(groupByMonthYearSpecificCountry);
+          this.svg
+            .append("path")
+            .datum( groupByMonthYearSpecificCountry)
+            .attr("fill", "none")
+            .attr("stroke", "steelblue")
+            .attr("stroke-width", 1.5)
+            .attr(
+              "d",
+              d3
+                .line()
+                .x((d) => this.x(d3.timeParse("%m/%Y")(d[0])))
+                .y((d) => this.y(d[1]))
+                .curve(d3.curveNatural)
+            );
+       
     },
 
     createTooltip() {
@@ -243,6 +239,20 @@ for (let index = 0; index < this.data.length; index++) {
       // this.$store.commit("changeSelectedDate", d.date);
       // this.$store.commit("changeSelectedYear", d.date.getFullYear());
     },
+
+    groupByMonthYearSpecificCountry(data) {
+
+  
+        return d3.rollup(
+          data,
+          (v) =>
+            d3.sum(v, (d) => {
+              if (typeof d.newCasesSmoothedMillion !== "undefined")
+                return d.newCasesSmoothedMillion;
+            }),
+          (d) => d.monthYear
+        );
+      },
   },
   computed: {
     data: {
@@ -251,19 +261,20 @@ for (let index = 0; index < this.data.length; index++) {
       },
     },
 
-  lineSpecificCountryData:{
-    get() {
+    lineSpecificCountryData: {
+      get() {
         return this.$store.getters.lineSpecificCountryData;
       },
-    
-  },
+    },
 
     selectedCountries: {
       get() {
         return this.$store.getters.selectedCountries;
       },
     },
-groupByMonthYearSpecificCountry() {
+    
+
+    groupByMonthYear() {
       return d3.rollup(
         this.data,
         (v) =>
@@ -273,22 +284,6 @@ groupByMonthYearSpecificCountry() {
           }),
         (d) => d.monthYear
       );
-    },
-
-    groupByMonthYear:
-    {
-      set(data) {
-      console.log(data);
-      return d3.rollup(
-        data,
-        (v) =>
-          d3.sum(v, (d) => {
-            if (typeof d.newCasesSmoothedMillion !== "undefined")
-              return d.newCasesSmoothedMillion;
-          }),
-        (d) => d.monthYear
-      );
-    },
     },
     groupByMonthYearArray() {
       return Array.from(this.groupByMonthYear, ([date, value]) => ({
@@ -322,7 +317,7 @@ groupByMonthYearSpecificCountry() {
     y() {
       return d3
         .scaleLinear()
-        .domain([0, d3.max(this.groupByMonthYear(this.data), (d) => d[1])])
+        .domain([0, d3.max(this.groupByMonthYear, (d) => d[1])])
         .range([
           this.svgHeight - this.svgPadding.top - this.svgPadding.bottom,
           0,

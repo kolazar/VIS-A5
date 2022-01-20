@@ -31,9 +31,9 @@
             <div class="col-md-7">
               <ChoroplethMap />
             </div>
-            <div class="col-md-5">
+            <!-- <div class="col-md-5">
               <LineChart2 />
-            </div>
+            </div> -->
           </div>
         <!-- </div> -->
       

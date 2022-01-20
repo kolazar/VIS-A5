@@ -168,11 +168,10 @@ const store = new Vuex.Store({
 
       })
 
-
       for (let i = 0; i < state.data.length; i++) {
 
         if (!(state.data[i].iso_code.startsWith("OWID"))
-          && state.selectedCountries.includes(state.data[i].iso_code)
+          && state.selectedCountries[state.selectedCountries.length - 1] ===(state.data[i].iso_code)
 
         ) {
 
