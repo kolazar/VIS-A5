@@ -27,15 +27,14 @@ export default {
   },
   mounted() {
     this.drawAllCountriesLine();
-    
+
     this.createTooltip();
   },
   methods: {
     drawAllCountriesLine() {
       if (this.$refs.chart) this.svgWidth = this.$refs.chart.clientWidth;
 
-
-   this.svg
+      this.svg
         .append("path")
         .datum(this.groupByMonthYearAllCountries)
         .attr("class", "all-countries")
@@ -51,8 +50,8 @@ export default {
             .curve(d3.curveBasis)
         );
 
-this.drawXAxis();
-    this.drawYAxisAllCountries();
+      this.drawXAxis();
+      this.drawYAxisAllCountries();
 
       // d3.select(".focus").remove();
       // d3.select(".overlay").remove();
@@ -74,8 +73,6 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
 
       // let normalized = (groupByDayMap, d=>{return (d[1].newCasesSmoothedMillion-d3.min(groupByDayMap[1].newCasesSmoothedMillion))/(d3.max(groupByDayMap[1].newCasesSmoothedMillion)-d3.min(groupByDayMap[1].newCasesSmoothedMillion))})
       // console.log(normalized);
-
-   
 
       // .append("title")
       // .text((d) => {
@@ -142,31 +139,40 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
         this.maxData = newMaxData;
       }
 
-      console.log(this.groupByMonthYearSpecificCountry);
       this.svg
         .append("path")
         .datum(this.groupByMonthYearSpecificCountry)
         .attr("fill", "none")
         .attr("stroke", "steelblue")
         .attr("stroke-width", 1.5)
+        .attr("class", (d) => {
+          let [key] = d.entries();
+          let nestedMap = key[1];
+
+          let [isoCode] = nestedMap.entries();
+
+          return `path-${isoCode[0]}`;
+        })
         .attr(
           "d",
           d3
             .line()
             .x((d) => this.x(d3.timeParse("%m/%Y")(d[0])))
-            .y((d) => this.ySpecificCountry(d[1]))
+            .y((d) => {
+              let nestedMap = d[1];
+              let [value] = nestedMap.entries();
+              return this.ySpecificCountry(value[1]);
+            })
             .curve(d3.curveBasis)
         );
 
-    
 
       d3.selectAll(".all-countries").remove();
       d3.selectAll(".yaxis").remove();
     },
 
-
-    drawYAxisSpecificCountry(){
-  this.svg
+    drawYAxisSpecificCountry() {
+      this.svg
         .append("g")
         .call(d3.axisLeft(this.ySpecificCountry))
         .attr("class", "yaxis-country")
@@ -179,6 +185,13 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
         .attr("text-anchor", "end")
         .attr("fill", "black")
         .text("New Cases Smoothed per Million");
+    },
+
+    deleteOneCountryLine(){
+        d3.selectAll(`.path-${this.countryToDelete}`).remove();
+        
+        let path =  d3.selectAll("path");
+        console.log(path);
     },
 
     createTooltip() {
@@ -286,9 +299,14 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
       },
     },
 
-    selectedCountries: {
+    countryToAdd: {
       get() {
         return this.$store.getters.countryToAdd;
+      },
+    },
+    countryToDelete: {
+      get() {
+        return this.$store.getters.countryToDelete;
       },
     },
 
@@ -318,7 +336,8 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
             if (typeof d.newCasesSmoothedMillion !== "undefined")
               return d.newCasesSmoothedMillion;
           }),
-        (d) => d.monthYear
+        (d) => d.monthYear,
+        (d) => d.isoCode
       );
     },
 
@@ -357,7 +376,12 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
     },
 
     maxYSpecificCountry() {
-      return d3.max(this.groupByMonthYearSpecificCountry, (d) => d[1]);
+      return d3.max(this.groupByMonthYearSpecificCountry, (d) => {
+        let nestedMap = d[1];
+
+        let [value] = nestedMap.entries();
+        return value[1];
+      });
     },
 
     ySpecificCountry() {
@@ -384,18 +408,23 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
   },
 
   watch: {
-
     data: {
       handler() {
         this.drawAllCountriesLine();
       },
       deep: true,
     },
-    
-    selectedCountries: {
+
+    countryToAdd: {
       handler() {
         this.drawOneCountryLine();
         this.drawYAxisSpecificCountry();
+      },
+      deep: true,
+    },
+    countryToDelete: {
+      handler() {
+        this.deleteOneCountryLine();
       },
       deep: true,
     },

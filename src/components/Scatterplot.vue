@@ -117,7 +117,7 @@ export default {
       circlesGroup
         .enter()
         .append("circle")
-        .attr("class", (d) => d.isoCode)
+        .attr("class", (d) => d.countryName)
         .attr("r", 4)
         .style("stroke", "#fff")
         .merge(circlesGroup)
@@ -146,7 +146,7 @@ export default {
     },
 
     mouseClick(data) {
-      if (this.selectedCountries !== data.countryName)
+      if (!this.selectedCountries.includes(data.countryName))
         this.$store.commit("addSelectedCountry", data.countryName);
         else 
         this.$store.commit("deleteSelectedCountry", data.countryName);

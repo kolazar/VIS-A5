@@ -7,7 +7,7 @@ Vue.use(Vuex);
 const store = new Vuex.Store({
   state: {
     selectedDate: "12/2021",
-    countryToAdd: "",
+    countryToAdd: [],
     countryToDelete: "",
     choroplethMapData: [],
     data: [],
@@ -20,12 +20,17 @@ const store = new Vuex.Store({
     },
     addSelectedCountry(state, val) {
 
-      state.countryToAdd = val;
+      state.countryToAdd.push(val);
     },
     deleteSelectedCountry(state, val) {
 
-      
+
       state.countryToDelete = val;
+
+      const index = state.countryToAdd.indexOf(val);
+      if (index > -1) {
+        state.countryToAdd.splice(index, 1);
+      }
 
     },
 
@@ -35,7 +40,7 @@ const store = new Vuex.Store({
 
     selectedDate: (state) => state.selectedDate,
     countryToAdd: (state) => state.countryToAdd,
-    // countryToDelete:(state) => state.countryToDelete,
+    countryToDelete: (state) => state.countryToDelete,
 
     scatterPlotData(state) {
       let result = []
@@ -145,7 +150,6 @@ const store = new Vuex.Store({
       result = result.sort(sortByDateAscending);
 
       Object.freeze(result);
-      console.log(result);
       return result;
     },
 
@@ -168,7 +172,7 @@ const store = new Vuex.Store({
       for (let i = 0; i < state.data.length; i++) {
 
         if (!(state.data[i].iso_code.startsWith("OWID"))
-          && state.countryToAdd === state.data[i].iso_code
+          && state.countryToAdd[state.countryToAdd.length - 1] === (state.data[i].iso_code)
 
         ) {
 
