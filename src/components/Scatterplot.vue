@@ -146,7 +146,7 @@ export default {
     },
 
     mouseClick(data) {
-      if (!this.selectedCountries.includes(data.countryName))
+      if (this.selectedCountries !== data.countryName)
         this.$store.commit("addSelectedCountry", data.countryName);
         else 
         this.$store.commit("deleteSelectedCountry", data.countryName);
@@ -184,7 +184,7 @@ export default {
     },
     selectedCountries: {
       get() {
-        return this.$store.getters.selectedCountries;
+        return this.$store.getters.countryToAdd;
       },
     },
 
