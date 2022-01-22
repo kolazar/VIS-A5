@@ -36,6 +36,7 @@ export default {
         bottom: 50,
         left: 100,
       },
+
       n: 3,
       k: 30,
     };
@@ -48,11 +49,16 @@ export default {
     drawMap() {
       if (this.$refs.chart) this.svgWidth = this.$refs.chart.clientWidth;
 
+      let innerWidth =
+        this.svgWidth - this.svgPadding.left - this.svgPadding.right;
+      let innerHeight =
+        this.svgHeight - this.svgPadding.top - this.svgPadding.bottom;
+
       let projection = d3
         .geoMercator()
         .scale(100)
         .center([0, 20])
-        .translate([this.svgWidth / 2, this.svgHeight / 2]);
+        .translate([innerWidth / 2, innerHeight / 2]);
 
       let path = d3.geoPath().projection(projection);
 
@@ -77,7 +83,6 @@ export default {
         })
         .append("title")
         .text((d) => {
-
           return `${d.id}, ${data.get(d.id)}`;
         });
     },

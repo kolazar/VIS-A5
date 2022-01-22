@@ -7,7 +7,8 @@ Vue.use(Vuex);
 const store = new Vuex.Store({
   state: {
     selectedDate: "12/2021",
-    countryToAdd: [],
+    selectedCountries: [],
+    countryToAdd: "",
     countryToDelete: "",
     choroplethMapData: [],
     data: [],
@@ -19,18 +20,20 @@ const store = new Vuex.Store({
 
     },
     addSelectedCountry(state, val) {
-
-      state.countryToAdd.push(val);
+      state.countryToAdd = val;
+      state.selectedCountries.push(val);
+      state.countryToDelete = ""
     },
     deleteSelectedCountry(state, val) {
 
 
       state.countryToDelete = val;
 
-      const index = state.countryToAdd.indexOf(val);
+      const index = state.selectedCountries.indexOf(val);
       if (index > -1) {
-        state.countryToAdd.splice(index, 1);
+        state.selectedCountries.splice(index, 1);
       }
+      state.countryToAdd = ""
 
     },
 
@@ -40,6 +43,7 @@ const store = new Vuex.Store({
 
     selectedDate: (state) => state.selectedDate,
     countryToAdd: (state) => state.countryToAdd,
+    selectedCountries: (state) => state.selectedCountries,
     countryToDelete: (state) => state.countryToDelete,
 
     scatterPlotData(state) {
@@ -70,29 +74,30 @@ const store = new Vuex.Store({
 
       }
       let valuesToSum = ["newDeathsSmoothedMillion", "newVaccinesSmoothedMillion"];
-      let resultMap = d3.rollup(
+      let resultMap = d3.flatRollup(
         result,
         (v) =>
           Object.fromEntries(
             valuesToSum.map((col) => [col, d3.sum(v, (d) => d[col])])
           ),
-        (d) => d.isoCode
+        (d) => d.isoCode,
+        (d) => d.countryName,
       );
 
-
-
-      let array = Array.from(resultMap, ([countryName, value]) => ({ countryName, value }));
       let finalResult = []
-      for (let i = 0; i < array.length; i++) {
-        finalResult.push({
-          countryName: array[i].countryName,
-          newDeathsSmoothedMillion: array[i].value.newDeathsSmoothedMillion,
-          newVaccinesSmoothedMillion: array[i].value.newVaccinesSmoothedMillion,
-          isoCode: ""
-        })
+      for (let i = 0; i < resultMap.length; i++) {
+        for (let j = 0; j < resultMap[i].length; j++) {
+          finalResult.push({
+            countryName: resultMap[i][1],
+            newDeathsSmoothedMillion: resultMap[i][2].newDeathsSmoothedMillion,
+            newVaccinesSmoothedMillion: resultMap[i][2].newVaccinesSmoothedMillion,
+            isoCode: resultMap[i][0],
+          })
+
+        }
+
 
       }
-
       return finalResult;
     },
 
@@ -172,7 +177,7 @@ const store = new Vuex.Store({
       for (let i = 0; i < state.data.length; i++) {
 
         if (!(state.data[i].iso_code.startsWith("OWID"))
-          && state.countryToAdd[state.countryToAdd.length - 1] === (state.data[i].iso_code)
+          && state.countryToAdd === (state.data[i].iso_code)
 
         ) {
 
@@ -324,6 +329,7 @@ JSON implementation
         Object.freeze(d);
         state.data = d;
         document.getElementById('loading-message').remove();
+        // document.getElementById('hide-screen').style.display = null;
       })
 
       // d3.csv('./owid-covid-data-scatter.csv').then((d) => {

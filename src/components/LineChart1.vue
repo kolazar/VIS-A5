@@ -26,6 +26,7 @@ export default {
     };
   },
   mounted() {
+    
     this.drawAllCountriesLine();
 
     this.createTooltip();
@@ -103,8 +104,12 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
       //   });
     },
     drawXAxis() {
+      
+      // d3.select(".xaxis").remove();
+      
       this.svg
         .append("g")
+        .attr("class", "xaxis")
         .attr(
           "transform",
           `translate(0,${
@@ -115,6 +120,9 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
     },
 
     drawYAxisAllCountries() {
+
+      d3.select(".yaxis-country").remove();
+
       this.svg
         .append("g")
         .call(d3.axisLeft(this.y))
@@ -131,7 +139,9 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
     },
 
     drawOneCountryLine() {
-      d3.selectAll(".yaxis-country").remove();
+      d3.select(".yaxis-country").remove();
+      d3.select(".all-countries").remove();
+      d3.select(".yaxis").remove();
 
       let newMaxData = this.maxYSpecificCountry;
 
@@ -167,8 +177,8 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
         );
 
 
-      d3.selectAll(".all-countries").remove();
-      d3.selectAll(".yaxis").remove();
+      
+
     },
 
     drawYAxisSpecificCountry() {
@@ -188,10 +198,14 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
     },
 
     deleteOneCountryLine(){
-        d3.selectAll(`.path-${this.countryToDelete}`).remove();
+        d3.select(`.path-${this.countryToDelete}`).remove();
+
+        if(!this.selectedCountries.length){
+          this.drawAllCountriesLine()
+        }
         
-        let path =  d3.selectAll("path");
-        console.log(path);
+        // let path =  d3.selectAll("path");
+        // console.log(path);
     },
 
     createTooltip() {
@@ -299,8 +313,13 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
       },
     },
 
-    countryToAdd: {
+    selectedCountries: {
       get() {
+        return this.$store.getters.selectedCountries;
+      },
+    },
+    countryToAdd:{
+ get() {
         return this.$store.getters.countryToAdd;
       },
     },
@@ -417,14 +436,17 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
 
     countryToAdd: {
       handler() {
-        this.drawOneCountryLine();
-        this.drawYAxisSpecificCountry();
+    
+    if(this.countryToAdd !== "")
+    {    this.drawOneCountryLine();
+        this.drawYAxisSpecificCountry();}
       },
       deep: true,
     },
     countryToDelete: {
       handler() {
-        this.deleteOneCountryLine();
+        if (this.countryToDelete !== "")
+        {this.deleteOneCountryLine();}
       },
       deep: true,
     },

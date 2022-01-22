@@ -73,6 +73,10 @@ export default {
   margin-top: 20px;
 }
 
+/* text {
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+} */
+
 #hide-screen {
   /* display: none; */
 }

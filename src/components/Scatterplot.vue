@@ -117,7 +117,7 @@ export default {
       circlesGroup
         .enter()
         .append("circle")
-        .attr("class", (d) => d.countryName)
+        .attr("class", (d) => d.isoCode)
         .attr("r", 4)
         .style("stroke", "#fff")
         .merge(circlesGroup)
@@ -146,10 +146,10 @@ export default {
     },
 
     mouseClick(data) {
-      if (!this.selectedCountries.includes(data.countryName))
-        this.$store.commit("addSelectedCountry", data.countryName);
+      if (!this.selectedCountries.includes(data.isoCode))
+        this.$store.commit("addSelectedCountry", data.isoCode);
         else 
-        this.$store.commit("deleteSelectedCountry", data.countryName);
+        this.$store.commit("deleteSelectedCountry", data.isoCode);
     },
     // handleCircleMouseHover() {
     //   return d3.select(".tooltip").style("opacity", 1);
@@ -184,6 +184,11 @@ export default {
     },
     selectedCountries: {
       get() {
+        return this.$store.getters.selectedCountries;
+      },
+    },
+    countryToAdd:{
+ get() {
         return this.$store.getters.countryToAdd;
       },
     },
