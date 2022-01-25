@@ -86,7 +86,8 @@ const store = new Vuex.Store({
 
       let finalResult = []
       for (let i = 0; i < resultMap.length; i++) {
-        for (let j = 0; j < resultMap[i].length; j++) {
+
+
           finalResult.push({
             countryName: resultMap[i][1],
             newDeathsSmoothedMillion: resultMap[i][2].newDeathsSmoothedMillion,
@@ -94,10 +95,9 @@ const store = new Vuex.Store({
             isoCode: resultMap[i][0],
           })
 
-        }
-
-
+        
       }
+
       return finalResult;
     },
 
@@ -140,9 +140,7 @@ const store = new Vuex.Store({
             newDeathsSmoothedMillion: +state.data[i].new_deaths_smoothed_per_million,
             newVaccinesSmoothedMillion: +state.data[i].new_vaccinations_smoothed_per_million,
             newCasesSmoothedMillion: +state.data[i].new_cases_smoothed_per_million,
-            day: state.data[i].day,
-            month: state.data[i].month,
-            year: state.data[i].year,
+  
             monthYear: state.data[i].month + "/" + state.data[i].year,
           })
         }
@@ -188,9 +186,7 @@ const store = new Vuex.Store({
             newDeathsSmoothedMillion: +state.data[i].new_deaths_smoothed_per_million,
             newVaccinesSmoothedMillion: +state.data[i].new_vaccinations_smoothed_per_million,
             newCasesSmoothedMillion: +state.data[i].new_cases_smoothed_per_million,
-            day: state.data[i].day,
-            month: state.data[i].month,
-            year: state.data[i].year,
+     
             monthYear: state.data[i].month + "/" + state.data[i].year,
           })
         }
@@ -202,9 +198,75 @@ const store = new Vuex.Store({
 
       result = result.sort(sortByDateAscending);
 
+      
+
       Object.freeze(result);
-      console.log(result);
+
       return result;
+    },
+
+    voronoiData(state){
+
+      let result = [];
+
+
+      let a = [], b = []
+
+
+      state.data.forEach(function (d) {
+        a = d.date.split(" ", 1);
+        b = a[0].split("/");
+        d.year = b[2] * 1;
+        d.month = b[1] * 1;
+        d.day = b[0] * 1;
+
+      })
+
+      for (let i = 0; i < state.data.length; i++) {
+
+        if (!(state.data[i].iso_code.startsWith("OWID"))
+          && state.selectedCountries.includes(state.data[i].iso_code)
+
+        ) {
+
+          result.push({
+            isoCode: state.data[i].iso_code,
+            countryName: state.data[i].location,
+            date: d3.timeParse("%d/%m/%Y")(state.data[i].date),
+            newDeathsSmoothedMillion: +state.data[i].new_deaths_smoothed_per_million,
+            newVaccinesSmoothedMillion: +state.data[i].new_vaccinations_smoothed_per_million,
+            newCasesSmoothedMillion: +state.data[i].new_cases_smoothed_per_million,
+    
+            monthYear: state.data[i].month + "/" + state.data[i].year,
+          })
+        }
+      }
+
+      function sortByDateAscending(a, b) {
+        return a.date - b.date;
+      }
+
+      result = result.sort(sortByDateAscending);
+
+
+      result =  d3.flatRollup(
+        result,
+        (v) =>
+          d3.sum(v, (d) => {
+            if (typeof d.newCasesSmoothedMillion !== "undefined")
+              return d.newCasesSmoothedMillion;
+          }),
+        (d) => d.monthYear,
+        (d) => d.isoCode
+      );
+
+      
+
+      Object.freeze(result);
+
+      return result;
+
+
     },
 
 

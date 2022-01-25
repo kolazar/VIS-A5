@@ -125,6 +125,7 @@ export default {
       get() {
         return this.$store.getters.choroplethMapData;
       },
+      
     },
     x() {
       return d3.scaleQuantile(

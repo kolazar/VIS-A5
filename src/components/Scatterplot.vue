@@ -3,8 +3,6 @@
     <div class="tooltip"></div>
     <svg class="main-svg" :width="svgWidth" :height="svgHeight">
       <g class="chart-group" ref="chartGroup">
-        <g class="axis axis-x" ref="axisX"></g>
-        <g class="axis axis-y" ref="axisY"></g>
         <g class="circles-group" ref="circles"></g>
       </g>
     </svg>
@@ -56,32 +54,34 @@ export default {
       this.drawCircles();
     },
     drawXAxis() {
-      d3.select(".xaxis").remove();
-      d3.select(this.$refs.axisX)
+      d3.select(".scatterplot-x-axis").remove();
+      d3.select(this.$refs.chartGroup)
+      .append("g")
         .attr(
           "transform",
           `translate( 0, ${
             this.svgHeight - this.svgPadding.top - this.svgPadding.bottom
           } )`
-        )
+        ).attr("class", "scatterplot-x-axis")
         .call(d3.axisBottom(this.xScale))
         .raise()
         .append("text")
-        .attr("class", "xaxis")
         .attr("y", 40)
         .attr("x", this.svgWidth / 2)
         .attr("text-anchor", "middle")
         .attr("fill", "black")
         .text("New deaths smoothed per million");
     },
+    
     drawYAxis() {
-      d3.select(".yaxis").remove();
-      d3.select(this.$refs.axisY)
+      d3.select(".scatterplot-y-axis").remove();
+      d3.select(this.$refs.chartGroup)
+      .append("g")
+      .attr("class", "scatterplot-y-axis")
         .call(d3.axisLeft(this.yScale))
         .raise()
         .append("text")
         .attr("transform", "rotate(-90)")
-        .attr("class", "yaxis")
         .attr("x", -6)
         .attr("y", 6)
         .attr("dy", "0.71em")
@@ -119,7 +119,7 @@ export default {
         .append("circle")
         .attr("class", (d) => d.isoCode)
         .attr("r", 4)
-        .style("stroke", "#fff")
+        .attr("stroke", "#fff")
         .merge(circlesGroup)
         .attr("cx", (d) => {
           return this.xScale(d.newDeathsSmoothedMillion);
@@ -146,10 +146,11 @@ export default {
     },
 
     mouseClick(data) {
-      if (!this.selectedCountries.includes(data.isoCode))
+      if (!this.selectedCountries.includes(data.isoCode)) {
         this.$store.commit("addSelectedCountry", data.isoCode);
-        else 
-        this.$store.commit("deleteSelectedCountry", data.isoCode);
+        d3.selectAll(`.${data.isoCode}`).attr("stroke", "orange")
+        .attr( "stroke-width", 1.5);
+      } else this.$store.commit("deleteSelectedCountry", data.isoCode);
     },
     // handleCircleMouseHover() {
     //   return d3.select(".tooltip").style("opacity", 1);
@@ -171,7 +172,6 @@ export default {
     // },
   },
   computed: {
-    
     data: {
       get() {
         return this.$store.getters.scatterPlotData;
@@ -187,8 +187,8 @@ export default {
         return this.$store.getters.selectedCountries;
       },
     },
-    countryToAdd:{
- get() {
+    countryToAdd: {
+      get() {
         return this.$store.getters.countryToAdd;
       },
     },
