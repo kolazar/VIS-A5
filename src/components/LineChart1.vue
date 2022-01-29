@@ -23,6 +23,7 @@ export default {
         left: 100,
       },
       maxData: 0,
+      circleRadius: 5,
     };
   },
   mounted() {
@@ -201,7 +202,7 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
             .y((d) => {
               return this.ySpecificCountry(d[2]);
             })
-            .curve(d3.curveLinear)
+          // .curve(d3.curveLinear)
         );
 
       // if (this.activeCountryLineChart1 === groupByMonthYearSpecificCountry[1]) {
@@ -318,7 +319,7 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
       d3.select(".voronoi").remove();
       console.log(data);
       let points = data.map((d) => {
-        return [this.x(this.dateParser(d[0])), this.yAllData(d[2])];
+        return [this.x(this.dateParser(d[0])), this.yVoronoiData(d[3])];
       });
       let delaunay = d3.Delaunay.from(points);
       let voronoi = delaunay.voronoi([0, 0, this.innerWidth, this.innerHeight]);
@@ -329,7 +330,6 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
         return voronoiGroup
           .append("path")
           .on("mouseover", () => this.onHoverVoronoi(data[i]))
-          .attr("fill", "none")
           .attr("stroke", "pink")
           .attr(
             "d",
@@ -339,10 +339,30 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
       });
     },
     onHoverVoronoi(data) {
-      this.$store.commit("changeActiveCountryLineChart1", data[1]);
+      // this.$store.commit("changeActiveCountryLineChart1", data[1]);
 
-      d3.selectAll('path').attr('id', 'not-active')
-      d3.select(`.path-${data[1]}`).attr('id', 'active')
+      d3.selectAll("path").attr("id", "not-active");
+      d3.selectAll(".voronoi circle").remove();
+      d3.selectAll(".voronoi text").remove();
+
+      console.log(this.dateParser(this.x(data[0])));
+
+      d3.select(`.path-${data[1]}`).attr("id", "active");
+
+      let lineChartTooltip = d3
+        .select(".voronoi")
+        .append("g")
+        .attr(
+          "transform",
+          `translate(${this.x(this.dateParser(data[0]))},${this.yVoronoiData(
+            data[3]
+          )})`
+        );
+
+      lineChartTooltip.append("circle").attr("r", this.circleRadius);
+
+      lineChartTooltip.append("text").text(`${data[0]},${data[2]},${data[3]} `);
+
       console.log(data);
     },
 
@@ -482,10 +502,10 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
     innerWidth() {
       return this.svgWidth - this.svgPadding.left - this.svgPadding.right;
     },
-    yAllData() {
+    yVoronoiData() {
       return d3
         .scaleLinear()
-        .domain([0, d3.max(this.voronoiData, (d) => d[2])])
+        .domain([0, d3.max(this.voronoiData, (d) => d[3])])
         .range([
           this.svgHeight - this.svgPadding.top - this.svgPadding.bottom,
           0,
@@ -644,5 +664,10 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
 
 circle {
   cursor: pointer;
+}
+
+.voronoi path {
+  fill: none;
+  pointer-events: all;
 }
 </style>

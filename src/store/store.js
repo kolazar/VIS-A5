@@ -263,7 +263,8 @@ const store = new Vuex.Store({
               return d.newCasesSmoothedMillion;
           }),
         (d) => d.monthYear,
-        (d) => d.isoCode
+        (d) => d.isoCode,
+        (d) => d.countryName
       );
 
       
