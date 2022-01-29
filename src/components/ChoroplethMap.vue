@@ -49,16 +49,11 @@ export default {
     drawMap() {
       if (this.$refs.chart) this.svgWidth = this.$refs.chart.clientWidth;
 
-      let innerWidth =
-        this.svgWidth - this.svgPadding.left - this.svgPadding.right;
-      let innerHeight =
-        this.svgHeight - this.svgPadding.top - this.svgPadding.bottom;
-
       let projection = d3
         .geoMercator()
         .scale(100)
         .center([0, 20])
-        .translate([innerWidth / 2, innerHeight / 2]);
+        .translate([this.innerWidth / 2, this.innerHeight / 2]);
 
       let path = d3.geoPath().projection(projection);
 
@@ -68,11 +63,7 @@ export default {
 
       d3.selectAll("title").remove();
 
-      d3.select(this.$refs.chartGroup)
-        .attr(
-          "transform",
-          `translate(${this.svgPadding.left},${this.svgPadding.top})`
-        )
+      this.svg
         .selectAll("path")
         .data(mapWorld.features)
         .join("path")
@@ -84,8 +75,31 @@ export default {
         .append("title")
         .text((d) => {
           return `${d.id}, ${data.get(d.id)}`;
-        });
+        })
+        .raise()
+        ;
+
+      this.initializeZoom();
     },
+
+    initializeZoom() {
+      // this.svg
+      //   .append("rect")
+      //   .attr("class", "zoom")
+      //   .attr("width", this.innerWidth)
+      //   .attr("height", this.innerHeight)
+        this.svg.call(
+          d3
+            .zoom()
+            .scaleExtent([1, 8])
+            .on("zoom", (event) =>
+              d3
+                .select(this.$refs.chartGroup)
+                .attr("transform", event.transform)
+            )
+        );
+    },
+
     drawLegend() {
       // d3.select(this.$refs.chartGroup)
       //   .append(legend)
@@ -125,7 +139,20 @@ export default {
       get() {
         return this.$store.getters.choroplethMapData;
       },
-      
+    },
+    svg() {
+      return d3
+        .select(this.$refs.chartGroup)
+        .attr(
+          "transform",
+          `translate(${this.svgPadding.left} ,${this.svgPadding.top})`
+        );
+    },
+    innerHeight() {
+      return this.svgHeight - this.svgPadding.top - this.svgPadding.bottom;
+    },
+    innerWidth() {
+      return this.svgWidth - this.svgPadding.left - this.svgPadding.right;
     },
     x() {
       return d3.scaleQuantile(
@@ -179,5 +206,9 @@ export default {
 };
 </script>
 
-<style>
+<style >
+.zoom {
+  fill: none;
+  pointer-events: all;
+}
 </style>

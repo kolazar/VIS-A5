@@ -10,7 +10,6 @@ const store = new Vuex.Store({
     selectedCountries: [],
     countryToAdd: "",
     countryToDelete: "",
-    activeCountryLineChart1: "",
     choroplethMapData: [],
     data: [],
   },
@@ -38,9 +37,6 @@ const store = new Vuex.Store({
 
     },
 
-    changeActiveCountryLineChart1(state, val){
-      state.activeCountryLineChart1 = val;
-    },
 
 
   },
@@ -50,7 +46,6 @@ const store = new Vuex.Store({
     countryToAdd: (state) => state.countryToAdd,
     selectedCountries: (state) => state.selectedCountries,
     countryToDelete: (state) => state.countryToDelete,
-    activeCountryLineChart1: (state)=>state.activeCountryLineChart1,
 
     scatterPlotData(state) {
       let result = []
