@@ -147,12 +147,7 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
       this.svg
         .append("g")
         .attr("class", "line1-axis-x")
-        .attr(
-          "transform",
-          `translate(0,${
-            this.svgHeight - this.svgPadding.top - this.svgPadding.bottom
-          })`
-        )
+        .attr("transform", `translate(0,${this.innerHeight})`)
         .call(d3.axisBottom(this.x));
     },
 
@@ -186,9 +181,12 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
         this.drawYAxisSpecificCountry();
       }
 
+      let groupByMonthYearSpecificCountry =
+        this.groupByMonthYearSpecificCountry;
+
       this.svg
         .append("path")
-        .datum(this.groupByMonthYearSpecificCountry)
+        .datum(groupByMonthYearSpecificCountry)
         .attr("fill", "none")
         .attr("stroke", "steelblue")
         .attr("stroke-width", 1.5)
@@ -205,6 +203,32 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
             })
             .curve(d3.curveLinear)
         );
+
+      // if (this.activeCountryLineChart1 === groupByMonthYearSpecificCountry[1]) {
+      //   this.svg
+      //     .append("path")
+      //     .datum(groupByMonthYearSpecificCountry)
+      //     .attr("fill", "none")
+      //     .attr("stroke", "steelblue")
+      //     .attr("id", "active")
+      //     .attr("stroke-width", 1.5)
+      //     .attr("class", (d) => {
+      //       return `path-${d[1][1]}`;
+      //     })
+      //     .attr(
+      //       "d",
+      //       d3
+      //         .line()
+      //         .x((d) => this.x(this.dateParser(d.find(groupByMonthYearSpecificCountry[1]===this.activeCountryLineChart1)[0])))
+      //         .y((d) => {
+      //           return this.ySpecificCountry(d.find(groupByMonthYearSpecificCountry[1]===this.activeCountryLineChart1)[2]);
+      //         })
+      //         .curve(d3.curveLinear)
+      //     );
+      // } else {
+      //   null;
+      // }
+
       this.drawYAxisSpecificCountry();
       this.drawVoronoi(this.voronoiData);
 
@@ -292,25 +316,19 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
     },
     drawVoronoi(data) {
       d3.select(".voronoi").remove();
+      console.log(data);
       let points = data.map((d) => {
-        return [
-        this.x(this.dateParser(d[0])),
-        this.yAllData(d[2]),
-      ]});
+        return [this.x(this.dateParser(d[0])), this.yAllData(d[2])];
+      });
       let delaunay = d3.Delaunay.from(points);
-      let voronoi = delaunay.voronoi([
-        0,
-        0,
-        this.svgWidth - this.svgPadding.left - this.svgPadding.right,
-        this.svgHeight - this.svgPadding.top - this.svgPadding.bottom,
-      ]);
+      let voronoi = delaunay.voronoi([0, 0, this.innerWidth, this.innerHeight]);
 
       let voronoiGroup = this.svg.append("g").attr("class", "voronoi");
 
       points.map((point, i) => {
         return voronoiGroup
           .append("path")
-
+          .on("mouseover", () => this.onHoverVoronoi(data[i]))
           .attr("fill", "none")
           .attr("stroke", "pink")
           .attr(
@@ -319,6 +337,13 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
             voronoi.renderCell(i)
           );
       });
+    },
+    onHoverVoronoi(data) {
+      this.$store.commit("changeActiveCountryLineChart1", data[1]);
+
+      d3.selectAll('path').attr('id', 'not-active')
+      d3.select(`.path-${data[1]}`).attr('id', 'active')
+      console.log(data);
     },
 
     createTooltip() {
@@ -445,8 +470,20 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
         return this.$store.getters.voronoiData;
       },
     },
-yAllData(){
-return d3
+    activeCountryLineChart1: {
+      get() {
+        return this.$store.getters.activeCountryLineChart1;
+      },
+    },
+
+    innerHeight() {
+      return this.svgHeight - this.svgPadding.top - this.svgPadding.bottom;
+    },
+    innerWidth() {
+      return this.svgWidth - this.svgPadding.left - this.svgPadding.right;
+    },
+    yAllData() {
+      return d3
         .scaleLinear()
         .domain([0, d3.max(this.voronoiData, (d) => d[2])])
         .range([
@@ -454,7 +491,7 @@ return d3
           0,
         ])
         .nice();
-},
+    },
     groupByMonthYearAllCountries() {
       return d3.rollup(
         this.data,
@@ -503,20 +540,14 @@ return d3
             d3.timeParse("%m/%Y")(d.date)
           )
         )
-        .range([
-          0,
-          this.svgWidth - this.svgPadding.left - this.svgPadding.right,
-        ]);
+        .range([0, this.innerWidth]);
     },
 
     y() {
       return d3
         .scaleLinear()
         .domain([0, d3.max(this.groupByMonthYearAllCountries, (d) => d[1])])
-        .range([
-          this.svgHeight - this.svgPadding.top - this.svgPadding.bottom,
-          0,
-        ])
+        .range([this.innerHeight, 0])
         .nice();
     },
 
@@ -602,6 +633,13 @@ return d3
 .overlay {
   fill: none;
   pointer-events: all;
+}
+
+#active {
+  stroke: #000;
+}
+#none {
+  stroke: #000;
 }
 
 circle {
