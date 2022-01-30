@@ -24,7 +24,7 @@ export default {
       },
       maxData: 0,
       circleRadius: 5,
-      epsilon: 1
+      epsilon: 1,
     };
   },
   mounted() {
@@ -34,42 +34,56 @@ export default {
     drawAllCountriesLine() {
       if (this.$refs.chart) this.svgWidth = this.$refs.chart.clientWidth;
 
+      this.svg.selectAll('path').remove()
+
       this.svg
         .append("g")
-        .attr("class", "all-countries")
 
         .append("path")
-        .datum(this.groupByMonthYearAllCountries)
+        .datum(this.groupByMonthYearAllCountriesVaccinesCases)
+        .attr("class", "all-countries")
+
         .attr("fill", "none")
-        .attr("stroke", "steelblue")
+        .attr("stroke", "#78a4d3")
+        .attr("stroke-width", 1.5)
+        .attr("stroke-linecap","round")
+        .attr(
+          "d",
+          d3
+            .line()
+            .x((d) => this.x(this.dateParser(d[0])))
+            .y((d) => this.y(d[1].newCasesSmoothedMillion))
+            .curve(d3.curveLinear)
+        );
+
+      this.svg
+        .append("g")
+
+        .append("path")
+        .datum(this.groupByMonthYearAllCountriesVaccinesCases)
+        .attr("class", "all-countries")
+
+        .attr("fill", "none")
+        .attr("stroke", "#c5385b")
         .attr("stroke-width", 1.5)
         .attr(
           "d",
           d3
             .line()
             .x((d) => this.x(this.dateParser(d[0])))
-            .y((d) => this.y(d[1]))
-          // .curve(d3.curveBasis)
+            .y((d) => this.y(d[1].newVaccinesSmoothedMillion + this.epsilon))
+            .curve(d3.curveLinear)
         );
 
       this.drawXAxis();
       this.drawYAxisAllCountries();
-      this.drawVoronoiAllCountries(this.groupByMonthYearAllCountries);
+      this.drawVoronoiAllCountries(
+        this.groupByMonthYearAllCountriesVaccinesCases
+      );
 
       /*
 Grouping data for two lines representing newCasesSmoothedMillion and newVaccinesSmoothedMillion
 */
-
-      // let valuesToSum = ["newCasesSmoothedMillion", "newVaccinesSmoothedMillion"];
-
-      // let groupByDayMap = d3.rollup(
-      //   this.data,
-      //   (v) =>
-      //     Object.fromEntries(
-      //       valuesToSum.map((col) => [col, d3.sum(v, (d) => d[col])])
-      //     ),
-      //   (d) => d.date
-      // );
 
       // let normalized = (groupByDayMap, d=>{return (d[1].newCasesSmoothedMillion-d3.min(groupByDayMap[1].newCasesSmoothedMillion))/(d3.max(groupByDayMap[1].newCasesSmoothedMillion)-d3.min(groupByDayMap[1].newCasesSmoothedMillion))})
       // console.log(normalized);
@@ -104,7 +118,7 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
     },
 
     drawXAxis() {
-      d3.select(".axis-x").remove();
+      d3.select(".line1-axis-x").remove();
 
       this.svg
         .append("g")
@@ -129,7 +143,7 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
         .attr("dy", "0.71em")
         .attr("text-anchor", "end")
         .attr("fill", "black")
-        .text("New Cases Smoothed per Million");
+        .text("New Cases/Vaccines Smoothed per Million");
     },
 
     drawOneCountryLine() {
@@ -153,8 +167,8 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
         .append("path")
         .datum(this.groupByMonthYearSpecificCountry)
         .attr("fill", "none")
-        .attr("stroke", "steelblue")
-        .attr("stroke-width", 1.5)
+        .attr("stroke", "#78a4d3")
+         .attr("stroke-width", 1.5)
         .attr("class", (d) => {
           return `path-${d[1][1]}`;
         })
@@ -164,8 +178,9 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
             .line()
             .x((d) => this.x(this.dateParser(d[0])))
             .y((d) => {
-              return this.yGroupByMonthYearCountryAllCountries(d[2]+this.epsilon);
-          
+              return this.yGroupByMonthYearCountryAllCountries(
+                d[2] + this.epsilon
+              );
             })
             .curve(d3.curveLinear)
         );
@@ -219,23 +234,41 @@ Grouping data for two lines representing newCasesSmoothedMillion and newVaccines
 
     deleteOneCountryLine() {
       d3.select(`.path-${this.countryToDelete}`).remove();
-      this.deleteVoronoi()
-      this.drawVoronoi(this.voronoiData)
+      this.deleteVoronoi();
+      this.drawVoronoi(this.voronoiData);
 
       if (!this.selectedCountries.length) {
         this.drawAllCountriesLine();
         this.drawYAxisAllCountries();
       }
     },
-    deleteVoronoi(){
-d3.select(".voronoi").remove();
+    deleteVoronoi() {
+      d3.select(".voronoi").remove();
     },
 
     drawVoronoiAllCountries(data) {
-      this.deleteVoronoi()
-      let points = data.map((d) => {
-        return [this.x(this.dateParser(d[0])), this.y(d[1])];
+      this.deleteVoronoi();
+
+      let casesVaccinesArray = [];
+
+      for (let i = 0; i < data.length; i++) {
+        casesVaccinesArray.push({
+          date: data[i][0],
+          val: data[i][1].newCasesSmoothedMillion,
+        });
+        casesVaccinesArray.push({
+          date: data[i][0],
+          val:
+            data[i][1].newVaccinesSmoothedMillion > 0
+              ? data[i][1].newVaccinesSmoothedMillion
+              : data[i][1].newVaccinesSmoothedMillion + this.epsilon,
+        });
+      }
+
+      let points = casesVaccinesArray.map((d) => {
+        return [this.x(this.dateParser(d.date)), this.y(d.val)];
       });
+
       let delaunay = d3.Delaunay.from(points);
       let voronoi = delaunay.voronoi([0, 0, this.innerWidth, this.innerHeight]);
 
@@ -244,10 +277,14 @@ d3.select(".voronoi").remove();
       points.map((point, i) => {
         return voronoiGroup
           .append("path")
-          .on("mouseover", () => this.onHoverVoronoiAllCountries(data[i]))
-          .on("click", () => this.mouseClick(this.groupByMonthYearAllCountries))
-          .attr("stroke", "pink")
-          .attr(
+          // .attr("stroke", "pink")
+          .on("mouseover", () =>
+            this.onHoverVoronoiAllCountries(casesVaccinesArray[i])
+          )
+          .on("click", () =>
+            this.mouseClick(this.groupByMonthYearAllCountriesVaccinesCases)
+          )
+            .attr(
             "d",
 
             voronoi.renderCell(i)
@@ -256,36 +293,36 @@ d3.select(".voronoi").remove();
     },
 
     onHoverVoronoiAllCountries(data) {
-      d3.selectAll("path").attr("id", "not-active");
+      this.svg.selectAll("path").attr("id", "not-active");
       d3.selectAll(".voronoi g").remove();
 
-      d3.select(`all-countries`).attr("id", "active");
+      d3.select(`.all-countries`).attr("id", "active");
 
       let lineChartTooltip = d3
         .select(".voronoi")
         .append("g")
         .attr(
           "transform",
-          `translate(${this.x(this.dateParser(data[0]))},
-          ${this.y(data[1])})`
+          `translate(${this.x(this.dateParser(data.date))},
+          ${this.y(data.val)})`
         );
 
       lineChartTooltip.append("circle").attr("r", this.circleRadius);
       // .on("click", () =>
-      //   this.mouseClick(this.groupByMonthYearAllCountries)
+      //   this.mouseClick(this.groupByMonthYearAllCountriesVaccinesCases)
       // );
 
       lineChartTooltip
         .append("text")
-        .text(`${data[0]},${this.formatValue(data[1])} `);
+        .text(`${data.date},${this.formatValue(data.val)} `);
     },
 
     drawVoronoi(data) {
-this.deleteVoronoi()
-let points = data.map((d) => {
+      this.deleteVoronoi();
+      let points = data.map((d) => {
         return [
           this.x(this.dateParser(d[0])),
-          this.yGroupByMonthYearCountryAllCountries(d[3]+this.epsilon),
+          this.yGroupByMonthYearCountryAllCountries(d[3] + this.epsilon),
         ];
       });
       let delaunay = d3.Delaunay.from(points);
@@ -298,9 +335,8 @@ let points = data.map((d) => {
           .append("path")
           .on("mouseover", () => this.onHoverVoronoi(data[i]))
           .on("click", () =>
-            this.mouseClick(this.groupByMonthYearAllCountries)
+            this.mouseClick(this.groupByMonthYearAllCountriesVaccinesCases)
           )
-          .attr("stroke", "pink")
           .attr(
             "d",
 
@@ -310,7 +346,7 @@ let points = data.map((d) => {
     },
 
     onHoverVoronoi(data) {
-      d3.selectAll("path").attr("id", "not-active");
+      this.svg.selectAll("path").attr("id", "not-active");
       d3.selectAll(".voronoi g").remove();
 
       d3.select(`.path-${data[1]}`).attr("id", "active");
@@ -321,7 +357,7 @@ let points = data.map((d) => {
         .attr(
           "transform",
           `translate(${this.x(this.dateParser(data[0]))},
-          ${this.yGroupByMonthYearCountryAllCountries(data[3]+this.epsilon)})`
+          ${this.yGroupByMonthYearCountryAllCountries(data[3] + this.epsilon)})`
         );
 
       //  lineChartTooltip.append("rect")
@@ -331,7 +367,7 @@ let points = data.map((d) => {
 
       lineChartTooltip.append("circle").attr("r", this.circleRadius);
       // .on("click", () =>
-      //   this.mouseClick(this.groupByMonthYearAllCountries)
+      //   this.mouseClick(this.groupByMonthYearAllCountriesVaccinesCases)
       // );
 
       lineChartTooltip
@@ -342,7 +378,6 @@ let points = data.map((d) => {
     },
 
     mouseClick(data) {
-      console.log(data);
       let x0 = this.x.invert(d3.pointer(event)[0]),
         bisectDate = d3.bisector((d) => this.dateParser(d[0])).left,
         i = bisectDate(data, x0, 1),
@@ -392,6 +427,11 @@ let points = data.map((d) => {
         return this.$store.getters.activeCountryLineChart1;
       },
     },
+     reset: {
+      get() {
+        return this.$store.getters.reset;
+      },
+    },
 
     innerHeight() {
       return this.svgHeight - this.svgPadding.top - this.svgPadding.bottom;
@@ -408,14 +448,30 @@ let points = data.map((d) => {
         );
     },
 
-    groupByMonthYearAllCountries() {
+    // groupByMonthYearAllCountriesCases() {
+    //   return d3.flatRollup(
+    //     this.data,
+    //     (v) =>
+    //       d3.sum(v, (d) => {
+    //         if (typeof d.newCasesSmoothedMillion !== "undefined")
+    //           return d.newCasesSmoothedMillion;
+    //       }),
+    //     (d) => d.monthYear
+    //   );
+    // },
+
+    groupByMonthYearAllCountriesVaccinesCases() {
+      let valuesToSum = [
+        "newCasesSmoothedMillion",
+        "newVaccinesSmoothedMillion",
+      ];
+
       return d3.flatRollup(
         this.data,
         (v) =>
-          d3.sum(v, (d) => {
-            if (typeof d.newCasesSmoothedMillion !== "undefined")
-              return d.newCasesSmoothedMillion;
-          }),
+          Object.fromEntries(
+            valuesToSum.map((col) => [col, d3.sum(v, (d) => d[col])])
+          ),
         (d) => d.monthYear
       );
     },
@@ -432,8 +488,8 @@ let points = data.map((d) => {
         (d) => d.isoCode
       );
     },
-    groupByMonthYearCountryAllCountries(){
-return d3.flatRollup(
+    groupByMonthYearCountry() {
+      return d3.flatRollup(
         this.data,
         (v) =>
           d3.sum(v, (d) => {
@@ -443,14 +499,13 @@ return d3.flatRollup(
         (d) => d.monthYear,
         (d) => d.isoCode
       );
-       
     },
 
     x() {
       return d3
         .scaleTime()
         .domain(
-          d3.extent(this.groupByMonthYearAllCountries, (d) =>
+          d3.extent(this.groupByMonthYearAllCountriesVaccinesCases, (d) =>
             this.dateParser(d[0])
           )
         )
@@ -460,16 +515,24 @@ return d3.flatRollup(
     y() {
       return d3
         .scaleLog()
-        .domain([this.epsilon, d3.max(this.groupByMonthYearAllCountries, (d) => d[1])])
+        .domain([
+          this.epsilon,
+          d3.max(this.groupByMonthYearAllCountriesVaccinesCases, (d) =>
+            d[1].newCasesSmoothedMillion > d[1].newVaccinesSmoothedMillion
+              ? d[1].newCasesSmoothedMillion
+              : d[1].newVaccinesSmoothedMillion
+          ),
+        ])
         .range([this.innerHeight, 0])
         .nice();
     },
     yGroupByMonthYearCountryAllCountries() {
-      
-
       return d3
         .scaleLog()
-        .domain([this.epsilon, d3.max(this.groupByMonthYearCountryAllCountries, (d) => d[2])])
+        .domain([
+          this.epsilon,
+          d3.max(this.groupByMonthYearCountry, (d) => d[2]),
+        ])
         .range([this.innerHeight, 0])
         .nice();
     },
@@ -520,44 +583,36 @@ return d3.flatRollup(
       },
       deep: true,
     },
-  },
+    selectedCountries: {
+      handler() {
+
+        if(this.selectedCountries.length===0)
+        this.drawAllCountriesLine();
+        }
+      },
+      deep: true,
+    },
+  
 };
 </script>
 
 <style>
-.focus circle {
-  fill: steelblue;
-}
-
-.focus text {
-  font-size: 14px;
-}
-
 .tooltip-frame {
   fill: white;
   stroke: #000;
 }
 
-.tooltip-date,
-.tooltip-info {
-  font-weight: bold;
-}
-
-.overlay {
-  fill: none;
-  pointer-events: all;
-}
-
 #active {
-  stroke: #000;
+  stroke: #062f5c;
 }
 #none {
   stroke: #000;
 }
 
-circle {
+
+/* circle {
   cursor: pointer;
-}
+} */
 
 .voronoi path {
   fill: none;

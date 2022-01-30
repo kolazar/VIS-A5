@@ -37,6 +37,7 @@ export default {
         bottom: 50,
         left: 100,
       },
+      radius:7,
     };
   },
   mounted() {
@@ -118,7 +119,7 @@ export default {
         .enter()
         .append("circle")
         .attr("class", (d) => d.isoCode)
-        .attr("r", 4)
+        .attr("r", this.radius)
         .attr("stroke", "#fff")
         .merge(circlesGroup)
         .attr("cx", (d) => {
@@ -128,7 +129,7 @@ export default {
           return this.yScale(d.newVaccinesSmoothedMillion);
         })
         .style("opacity", "0.5")
-        .attr("fill", "gray")
+        .attr("fill", "steelblue")
         .on("click", (event, d) => this.mouseClick(d))
         .append("title")
         .text((d) => {
@@ -150,7 +151,11 @@ export default {
         this.$store.commit("addSelectedCountry", data.isoCode);
         d3.selectAll(`.${data.isoCode}`).attr("stroke", "orange")
         .attr( "stroke-width", 1.5);
-      } else this.$store.commit("deleteSelectedCountry", data.isoCode);
+      } else {this.$store.commit("deleteSelectedCountry", data.isoCode)
+      
+        d3.selectAll(`.${data.isoCode}`).attr("stroke", null)
+        .attr( "stroke-width", 1.5);
+      }
     },
     // handleCircleMouseHover() {
     //   return d3.select(".tooltip").style("opacity", 1);

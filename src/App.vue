@@ -7,7 +7,9 @@
         </div>
       </div>
       <div class="row">
-        <div class="col-md-12">Control Plane</div>
+        <div class="col-md-12">Control Plane
+          <ControlPlane/>
+        </div>
       </div>
       <!-- <div class="row">
         <div class="col-md-12">
@@ -45,6 +47,7 @@
 // import BarChart from './components/BarChart.vue';
 import ChoroplethMap from "./components/ChoroplethMap.vue";
 // import YearSlider from './components/YearSlider.vue';
+import ControlPlane from './components/ControlPlane.vue';
 import Scatterplot from "./components/Scatterplot.vue";
 import LineChart1 from "./components/LineChart1.vue";
 // import LineChart2 from "./components/LineChart2.vue";
@@ -56,6 +59,7 @@ export default {
     ChoroplethMap,
     LineChart1,
     // LineChart2,
+    ControlPlane
   },
   mounted() {
     this.$store.dispatch("loadData");

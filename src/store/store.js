@@ -12,6 +12,7 @@ const store = new Vuex.Store({
     countryToDelete: "",
     choroplethMapData: [],
     data: [],
+    reset: false,
   },
   mutations: {
 
@@ -37,6 +38,16 @@ const store = new Vuex.Store({
 
     },
 
+    reset(state) {
+
+      state.selectedCountries = []
+      state.selectedDate = "12/2021"
+      state.countryToAdd=""
+      state.countryToDelete = ""
+
+      state.reset = true
+    },
+
 
 
   },
@@ -46,6 +57,7 @@ const store = new Vuex.Store({
     countryToAdd: (state) => state.countryToAdd,
     selectedCountries: (state) => state.selectedCountries,
     countryToDelete: (state) => state.countryToDelete,
+    reset:(state)=> state.reset,
 
     scatterPlotData(state) {
       let result = []
@@ -89,14 +101,14 @@ const store = new Vuex.Store({
       for (let i = 0; i < resultMap.length; i++) {
 
 
-          finalResult.push({
-            countryName: resultMap[i][1],
-            newDeathsSmoothedMillion: resultMap[i][2].newDeathsSmoothedMillion,
-            newVaccinesSmoothedMillion: resultMap[i][2].newVaccinesSmoothedMillion,
-            isoCode: resultMap[i][0],
-          })
+        finalResult.push({
+          countryName: resultMap[i][1],
+          newDeathsSmoothedMillion: resultMap[i][2].newDeathsSmoothedMillion,
+          newVaccinesSmoothedMillion: resultMap[i][2].newVaccinesSmoothedMillion,
+          isoCode: resultMap[i][0],
+        })
 
-        
+
       }
 
       return finalResult;
@@ -105,11 +117,33 @@ const store = new Vuex.Store({
 
     choroplethMapData(state) {
       let result = new Map();
-      for (let i = 0; i < state.choroplethMapData.length; i++) {
-        result.set(state.choroplethMapData[i].iso_code,
-          [+state.choroplethMapData[i].cardiovasc_death_rate, +state.choroplethMapData[i].diabetes_prevalence]
-        )
+
+      for (let i = 0; i < state.data.length; i++) {
+
+        if (!(state.data[i].iso_code.startsWith("OWID"))) {
+          result.set(state.data[i].iso_code,
+            {
+              countryName: state.data[i].location,
+              cardiovascDeathRate: +state.data[i].cardiovasc_death_rate,
+              diabetesPrevalence: +state.data[i].diabetes_prevalence
+            })
+        }
+
+
       }
+
+
+      // for (let i = 0; i < state.choroplethMapData.length; i++) {
+      //   result.set(state.choroplethMapData[i].iso_code,
+      //     {
+
+      //       cardiovascDeathRate: +state.choroplethMapData[i].cardiovasc_death_rate,
+      //       diabetesPrevalence: +state.choroplethMapData[i].diabetes_prevalence
+      //     }
+
+      //     // [ +state.choroplethMapData[i].cardiovasc_death_rate, +state.choroplethMapData[i].diabetes_prevalence]
+      //   )
+      // }
       return result;
     },
 
@@ -141,7 +175,7 @@ const store = new Vuex.Store({
             newDeathsSmoothedMillion: +state.data[i].new_deaths_smoothed_per_million,
             newVaccinesSmoothedMillion: +state.data[i].new_vaccinations_smoothed_per_million,
             newCasesSmoothedMillion: +state.data[i].new_cases_smoothed_per_million,
-  
+
             monthYear: state.data[i].month + "/" + state.data[i].year,
           })
         }
@@ -187,7 +221,7 @@ const store = new Vuex.Store({
             newDeathsSmoothedMillion: +state.data[i].new_deaths_smoothed_per_million,
             newVaccinesSmoothedMillion: +state.data[i].new_vaccinations_smoothed_per_million,
             newCasesSmoothedMillion: +state.data[i].new_cases_smoothed_per_million,
-     
+
             monthYear: state.data[i].month + "/" + state.data[i].year,
           })
         }
@@ -199,14 +233,14 @@ const store = new Vuex.Store({
 
       result = result.sort(sortByDateAscending);
 
-      
+
 
       Object.freeze(result);
 
       return result;
     },
 
-    voronoiData(state){
+    voronoiData(state) {
 
       let result = [];
 
@@ -237,7 +271,7 @@ const store = new Vuex.Store({
             newDeathsSmoothedMillion: +state.data[i].new_deaths_smoothed_per_million,
             newVaccinesSmoothedMillion: +state.data[i].new_vaccinations_smoothed_per_million,
             newCasesSmoothedMillion: +state.data[i].new_cases_smoothed_per_million,
-    
+
             monthYear: state.data[i].month + "/" + state.data[i].year,
           })
         }
@@ -250,7 +284,7 @@ const store = new Vuex.Store({
       result = result.sort(sortByDateAscending);
 
 
-      result =  d3.flatRollup(
+      result = d3.flatRollup(
         result,
         (v) =>
           d3.sum(v, (d) => {
@@ -262,7 +296,7 @@ const store = new Vuex.Store({
         (d) => d.countryName
       );
 
-      
+
 
       Object.freeze(result);
 

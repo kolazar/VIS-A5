@@ -1,46 +1,70 @@
 <template>
   <div>
-    
-    <div class="mt-2">Selected Year: {{ selectedYear }}</div>
-    <!-- <button >Reset</button> -->
+    <div class="mt-2">
+      Selected Date: {{ this.timeFormat(this.dateParser(selectedDate)) }}
+    </div>
+    <div class="mt-2">
+      Selected Countries:{{selectedCountries}}
+    </div>
+    <button v-on:click="reset(this)">Reset</button>
   </div>
 </template>
 
 <script>
+import * as d3 from "d3";
 export default {
-  name: 'ControlPlane',
-  props: {
-  },
+  name: "ControlPlane",
+  props: {},
   data() {
-    return {
-    }
+    return {};
   },
-  mounted() {
-  },
+  mounted() {},
   methods: {
+    reset() {
+      this.$store.commit("reset");
+
+      for (let index = 0; index < this.data.length; index++) {
+        d3.selectAll(`.${this.data[index].isoCode}`).attr("stroke", null);
+      }
+    },
   },
   computed: {
-    selectedYear: {
+    data: {
       get() {
-        return this.$store.getters.selectedYear;
+        return this.$store.getters.scatterPlotData;
       },
-      set(val) {
-        this.$store.commit('changeSelectedYear', val);
-      },
-      selectedMonth: {
+    },
+    selectedDate: {
       get() {
-        return this.$store.getters.selectedYear;
+        return this.$store.getters.selectedDate;
       },
-      set(val) {
-        this.$store.commit('changeSelectedYear', val);
+    },
+
+    selectedCountries: {
+      get() {
+        return this.$store.getters.selectedCountries;
       },
+    },
+
+    dateParser() {
+      return d3.timeParse("%m/%Y");
+    },
+    timeFormat() {
+      return d3.timeFormat("%B %Y");
     },
   },
   watch: {
+    selectedDate: {
+      handler() {},
+
+      deep: true,
+    },
   },
-}
+};
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
+
+
+
 <style scoped>
 </style>
