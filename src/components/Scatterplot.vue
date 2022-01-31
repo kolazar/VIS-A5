@@ -37,7 +37,7 @@ export default {
         bottom: 50,
         left: 100,
       },
-      radius:7,
+      radius: 7,
     };
   },
   mounted() {
@@ -46,24 +46,22 @@ export default {
   methods: {
     drawScatterPlot() {
       if (this.$refs.chart) this.svgWidth = this.$refs.chart.clientWidth;
-      d3.select(this.$refs.chartGroup).attr(
-        "transform",
-        `translate(${this.svgPadding.left},${this.svgPadding.top})`
-      );
+
       this.drawXAxis();
       this.drawYAxis();
       this.drawCircles();
     },
     drawXAxis() {
       d3.select(".scatterplot-x-axis").remove();
-      d3.select(this.$refs.chartGroup)
-      .append("g")
+      this.svg
+        .append("g")
         .attr(
           "transform",
           `translate( 0, ${
             this.svgHeight - this.svgPadding.top - this.svgPadding.bottom
           } )`
-        ).attr("class", "scatterplot-x-axis")
+        )
+        .attr("class", "scatterplot-x-axis")
         .call(d3.axisBottom(this.xScale))
         .raise()
         .append("text")
@@ -73,12 +71,12 @@ export default {
         .attr("fill", "black")
         .text("New deaths smoothed per million");
     },
-    
+
     drawYAxis() {
       d3.select(".scatterplot-y-axis").remove();
-      d3.select(this.$refs.chartGroup)
-      .append("g")
-      .attr("class", "scatterplot-y-axis")
+      this.svg
+        .append("g")
+        .attr("class", "scatterplot-y-axis")
         .call(d3.axisLeft(this.yScale))
         .raise()
         .append("text")
@@ -108,27 +106,34 @@ export default {
 
       // let sumstat = d3.group(this.data, (d) => d.isoCode);
 
-      let circlesGroup = d3
-        .select(this.$refs.circles)
-        .selectAll("circle")
-        .data(this.data);
+      this.svg.selectAll("title").remove();
+      this.svg.selectAll("circle").remove();
+
+      let circlesGroup = this.svg.selectAll("circle").data(this.data);
 
       circlesGroup.exit().remove();
 
       circlesGroup
         .enter()
         .append("circle")
-        .attr("class", (d) => d.isoCode)
+        .attr("class", (d) => `scatterplot scatter-` + d.isoCode)
         .attr("r", this.radius)
-        .attr("stroke", "#fff")
+        .attr("stroke", (d) =>
+          this.selectedCountries.includes(d.isoCode) ? "orange" : "#fff"
+        )
+        .attr("stroke-width", (d) =>
+          this.selectedCountries.includes(d.isoCode) ? 2 : null
+        )
         .merge(circlesGroup)
-        .attr("cx", (d) => {
-          return this.xScale(d.newDeathsSmoothedMillion);
-        })
-        .attr("cy", (d) => {
-          return this.yScale(d.newVaccinesSmoothedMillion);
-        })
-        .style("opacity", "0.5")
+
+        // .attr("cx", (d) => {
+        //   return this.xScale(d.newDeathsSmoothedMillion);
+        // })
+
+        // .attr("cy", (d) => {
+        //   return this.yScale(d.newVaccinesSmoothedMillion);
+        // })
+
         .attr("fill", "steelblue")
         .on("click", (event, d) => this.mouseClick(d))
         .append("title")
@@ -139,22 +144,57 @@ export default {
             d.newVaccinesSmoothedMillion
           )}`;
         });
+
+
+// d3.selectAll(".scatterplot")
+//       .data(this.data).transition()
+//       .duration(1000)
+//        .ease(d3.easeQuadIn)
+//       .attr("cx", (d) => {
+//           return this.xScale(d.newDeathsSmoothedMillion);
+//         })
+// .transition()
+//       .duration(1000)
+//       .ease(d3.easeQuadIn)
+//         .attr("cy", (d) => {
+//           return this.yScale(d.newVaccinesSmoothedMillion);
+//         });
+
+
       // .on("mouseover", () => this.handleCircleMouseHover())
       // .on("mousemove", (event, d) =>
       //   this.handleCircleMouseMove(event, d.countryName)
       // )
       // .on("mouseleave", () => this.handleCircleMouseOut());
     },
-
+    updateScatterPlot() {
+      d3.selectAll(".scatterplot")
+      .data(this.data)
+      .transition()
+      .duration(1000)
+      .attr("cx", (d) => {
+          return this.xScale(d.newDeathsSmoothedMillion);
+        })
+.transition()
+      .duration(1000)
+        .attr("cy", (d) => {
+          return this.yScale(d.newVaccinesSmoothedMillion);
+        });
+    },
     mouseClick(data) {
       if (!this.selectedCountries.includes(data.isoCode)) {
         this.$store.commit("addSelectedCountry", data.isoCode);
-        d3.selectAll(`.${data.isoCode}`).attr("stroke", "orange")
-        .attr( "stroke-width", 1.5);
-      } else {this.$store.commit("deleteSelectedCountry", data.isoCode)
-      
-        d3.selectAll(`.${data.isoCode}`).attr("stroke", null)
-        .attr( "stroke-width", 1.5);
+        d3.selectAll(`.${data.isoCode}`)
+          .attr("stroke", "orange")
+          .attr("stroke-width", 1.5);
+        d3.selectAll(`.scatter-${data.isoCode}`)
+          .attr("stroke", "orange")
+          .attr("stroke-width", 2);
+      } else {
+        this.$store.commit("deleteSelectedCountry", data.isoCode);
+
+        d3.selectAll(`.${data.isoCode}`).attr("stroke", null);
+        d3.selectAll(`.scatter-${data.isoCode}`).attr("stroke", null);
       }
     },
     // handleCircleMouseHover() {
@@ -196,6 +236,15 @@ export default {
       get() {
         return this.$store.getters.countryToAdd;
       },
+    },
+
+    svg() {
+      return d3
+        .select(this.$refs.chartGroup)
+        .attr(
+          "transform",
+          `translate(${this.svgPadding.left},${this.svgPadding.top})`
+        );
     },
 
     dataMaxDeaths() {
@@ -245,7 +294,8 @@ export default {
     },
     selectedDate: {
       handler() {
-        this.drawScatterPlot();
+        // this.drawScatterPlot();
+        this.updateScatterPlot();
       },
 
       deep: true,
@@ -262,5 +312,9 @@ export default {
   border-width: 0.5px;
   border-radius: 3px;
   padding: 8px;
+}
+
+.scatterplot {
+  opacity: 0.5;
 }
 </style>

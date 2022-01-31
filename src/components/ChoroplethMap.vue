@@ -102,10 +102,14 @@ export default {
         d3.selectAll(`.${data}`)
           .attr("stroke", "orange")
           .attr("stroke-width", 1.5);
+          d3.selectAll(`.scatter-${data.isoCode}`).attr("stroke", "orange")
+        .attr( "stroke-width", 2);
       } else {
         this.$store.commit("deleteSelectedCountry", data);
 
-        d3.selectAll(`.${data}`).attr("stroke", null).attr("stroke-width", 1.5);
+        d3.selectAll(`.${data}`).attr("stroke", null);
+        d3.selectAll(`.scatter-${data.isoCode}`).attr("stroke", null)
+        
       }
     },
 

@@ -26,6 +26,8 @@ export default {
       for (let index = 0; index < this.data.length; index++) {
         d3.selectAll(`.${this.data[index].isoCode}`).attr("stroke", null);
       }
+
+      d3.selectAll(`.scatterplot`).attr("stroke", null);
     },
   },
   computed: {
