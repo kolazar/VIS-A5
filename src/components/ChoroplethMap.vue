@@ -1,6 +1,7 @@
 <template>
   <div class="vis-component" ref="chart">
     <svg class="main-svg" :width="svgWidth" :height="svgHeight">
+  <rect class="zoom" :width="svgWidth" :height="svgHeight"></rect>
       <g class="chart-group" ref="chartGroup">
         <g class="rects-group" ref="rects"></g>
       </g>
@@ -44,11 +45,13 @@ export default {
   },
   mounted() {
     this.drawMap();
-    this.drawLegend();
+   
 
   },
   methods: {
     drawMap() {
+
+
       if (this.$refs.chart) this.svgWidth = this.$refs.chart.clientWidth;
 
 
@@ -87,6 +90,9 @@ export default {
         })
         .raise();
 
+
+       this.drawLegend();
+
       this.initializeZoom();
 
     },
@@ -104,11 +110,7 @@ export default {
     },
 
     initializeZoom() {
-      // this.svg
-      //   .append("rect")
-      //   .attr("class", "zoom")
-      //   .attr("width", this.innerWidth)
-      //   .attr("height", this.innerHeight)
+    
       this.svg.call(
         d3
           .zoom()
@@ -121,6 +123,7 @@ export default {
 
     drawLegend() {
 
+      this.svg.select(".legend").remove()
 
       let legend = d3
         .select(this.$refs.chartGroup)
@@ -144,6 +147,7 @@ export default {
         .attr("refY", 3)
         .attr("orient", "auto")
         .append("path")
+        .attr('class','marker-path')
         .attr("d", "M0,0L9,3L0,6Z");
 
       legend

@@ -12,7 +12,6 @@ const store = new Vuex.Store({
     countryToDelete: "",
     choroplethMapData: [],
     data: [],
-    reset: false,
   },
   mutations: {
 
@@ -45,7 +44,6 @@ const store = new Vuex.Store({
       state.countryToAdd=""
       state.countryToDelete = ""
 
-      state.reset = true
     },
 
 
@@ -57,7 +55,6 @@ const store = new Vuex.Store({
     countryToAdd: (state) => state.countryToAdd,
     selectedCountries: (state) => state.selectedCountries,
     countryToDelete: (state) => state.countryToDelete,
-    reset:(state)=> state.reset,
 
     scatterPlotData(state) {
       let result = []
@@ -144,10 +141,12 @@ const store = new Vuex.Store({
       //     // [ +state.choroplethMapData[i].cardiovasc_death_rate, +state.choroplethMapData[i].diabetes_prevalence]
       //   )
       // }
+
+      Object.freeze(result);
       return result;
     },
 
-    lineChart1Data(state) {
+    lineChartData(state) {
       let result = [];
 
 
@@ -175,7 +174,7 @@ const store = new Vuex.Store({
             newDeathsSmoothedMillion: +state.data[i].new_deaths_smoothed_per_million,
             newVaccinesSmoothedMillion: +state.data[i].new_vaccinations_smoothed_per_million,
             newCasesSmoothedMillion: +state.data[i].new_cases_smoothed_per_million,
-
+            stringencyIndex: +state.data[i].stringency_index,
             monthYear: state.data[i].month + "/" + state.data[i].year,
           })
         }
@@ -221,8 +220,8 @@ const store = new Vuex.Store({
             newDeathsSmoothedMillion: +state.data[i].new_deaths_smoothed_per_million,
             newVaccinesSmoothedMillion: +state.data[i].new_vaccinations_smoothed_per_million,
             newCasesSmoothedMillion: +state.data[i].new_cases_smoothed_per_million,
-
             monthYear: state.data[i].month + "/" + state.data[i].year,
+            stringencyIndex: +state.data[i].stringency_index,
           })
         }
       }
@@ -271,7 +270,7 @@ const store = new Vuex.Store({
             newDeathsSmoothedMillion: +state.data[i].new_deaths_smoothed_per_million,
             newVaccinesSmoothedMillion: +state.data[i].new_vaccinations_smoothed_per_million,
             newCasesSmoothedMillion: +state.data[i].new_cases_smoothed_per_million,
-
+            stringencyIndex: +state.data[i].stringency_index,
             monthYear: state.data[i].month + "/" + state.data[i].year,
           })
         }
@@ -283,136 +282,11 @@ const store = new Vuex.Store({
 
       result = result.sort(sortByDateAscending);
 
-
-      result = d3.flatRollup(
-        result,
-        (v) =>
-          d3.sum(v, (d) => {
-            if (typeof d.newCasesSmoothedMillion !== "undefined")
-              return d.newCasesSmoothedMillion;
-          }),
-        (d) => d.monthYear,
-        (d) => d.isoCode,
-        (d) => d.countryName
-      );
-
-
-
-      Object.freeze(result);
-
-      return result;
-
-
-    },
-
-
-
-
-    // lineChart2Data(state) {
-    //   let result = [];
-    //   for (let i = 0; i < state.data.length; i++) {
-    //     result.push({
-    //       isoCode: state.data[i].iso_code,
-    //       countryName: state.data[i].location,
-    //       date: new Date(state.data[i].date),
-    //       stringency: +state.data[i].stringency_index,
-    //     })
-
-    //   }
-    //   return result;
-    // },
-    // lineChart2Data(state) {
-
-    //   let result = []
-    //   let a = [], b = []
-    //   // f_date=[];
-
-
-    //   state.lineChart2Data.forEach(function (d) {
-    //     a = d.date.split(" ", 1);
-    //     b = a[0].split("/");
-    //     // f_date = b[0].concat("-").concat(b[1]).concat("-").concat(b[2]);
-    //     d.year = b[2] * 1;
-    //     d.month = b[1] * 1;
-    //     d.day = b[0] * 1;
-
-    //   })
-
-
-
-    //   for (let i = 0; i < state.lineChart2Data.length; i++) {
-
-    //     result.push({
-    //       isoCode: state.lineChart2Data[i].iso_code,
-    //       countryName: state.lineChart2Data[i].location,
-    //       date: d3.timeParse("%d/%m/%Y")(state.lineChart2Data[i].date),
-    //       day: state.lineChart2Data[i].day,
-    //       month: state.lineChart2Data[i].month,
-    //       year: state.lineChart2Data[i].year,
-    //       policy: +state.lineChart2Data[i].stringency_index,
-    //     })
-
-
-    //     // if (state.lineChart2Data[i].stringency_index === ""){
-    //     //   result.policy: undefined,
-
-    //     // }
-
-    //   }
-
-    //   return result;
-    // },
-
-
-
-
-
-
-
-    /*
-    ==================
-JSON implementation
-    ==================
-    
-    lineChartData(state) {
-
-      let result = []
-
-      let keys = Object.keys(state.data);
-
-
-      keys.forEach((key) => {
-        for (let i = 0; i < state.data[key].data.length; i++) {
-
-          if (!(key.startsWith("OWID"))) {
-
-            result.push({
-
-              isoCode: key,
-              countryName: state.data[key].location,
-              date: d3.timeParse("%Y-%m-%d")(state.data[key].data[i].date),
-              newCasesSmoothedMillion: state.data[key].data[i].new_cases_smoothed_per_million,
-              newVaccinesSmoothedMillion: state.data[key].data[i].new_vaccinations_smoothed_per_million,
-              newDeathsSmoothedMillion: state.data[key].data[i].new_deaths_smoothed_per_million,
-              policy: state.data[key].data[i].stringency_index,
-
-            })
-          }
-        }
-        function sortByDateAscending(a, b) {
-          return a.date - b.date;
-        }
-
-        result = result.sort(sortByDateAscending);
-
-      })
-      console.log(result);
       Object.freeze(result);
 
       return result;
     },
 
-    */
   },
   actions: {
     loadData({ state }) {
@@ -430,16 +304,6 @@ JSON implementation
         // document.getElementById('hide-screen').style.display = null;
       })
 
-      // d3.csv('./owid-covid-data-scatter.csv').then((d) => {
-      //   state.lineChart1Data = d;
-      // })
-
-      // d3.json('./owid-covid-data.json').then((d) => {
-      //   Object.freeze(d);
-      //   state.data = d;
-      //   document.getElementById('loading-message').remove();
-      //   // document.getElementById('hide-screen').style.display = null;
-      // })
 
     },
   }

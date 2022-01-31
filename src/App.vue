@@ -21,26 +21,29 @@
 </div>
           <!-- <div id="hide-screen" class="col-md-12" style = "display: none"> -->
 
+
+ <div class="row">
+        <div class="col-md-12">Control Plane
+              <ChoroplethMap />
+
+        </div>
+      </div>
+
           <div class="row">
-            <div class="col-md-7">
+            <div class="col-md-4">
               <LineChart1 />
             </div>
-            <div class="col-md-5">
+            <div class="col-md-4">
               <Scatterplot />
             </div>
-          </div>
-          <div class="row">
-            <div class="col-md-7">
-              <ChoroplethMap />
-            </div>
-            <!-- <div class="col-md-5">
+         
+            <div class="col-md-4">
               <LineChart2 />
-            </div> -->
+            </div>
           </div>
-        <!-- </div> -->
-      
+       </div>
     </div>
-  </div>
+  <!-- </div> -->
 </template>
 
 <script>
@@ -50,7 +53,7 @@ import ChoroplethMap from "./components/ChoroplethMap.vue";
 import ControlPlane from './components/ControlPlane.vue';
 import Scatterplot from "./components/Scatterplot.vue";
 import LineChart1 from "./components/LineChart1.vue";
-// import LineChart2 from "./components/LineChart2.vue";
+import LineChart2 from "./components/LineChart2.vue";
 
 export default {
   name: "App",
@@ -58,7 +61,7 @@ export default {
     Scatterplot,
     ChoroplethMap,
     LineChart1,
-    // LineChart2,
+    LineChart2,
     ControlPlane
   },
   mounted() {
@@ -77,11 +80,8 @@ export default {
   margin-top: 20px;
 }
 
-/* text {
+text {
   font-family: Avenir, Helvetica, Arial, sans-serif;
-} */
-
-#hide-screen {
-  /* display: none; */
 }
+
 </style>
