@@ -114,8 +114,9 @@ export default {
     },
 
     initializeZoom() {
-    
-      this.svg.call(
+   
+
+this.svg.call(
         d3
           .zoom()
           .scaleExtent([1, 8])
@@ -123,6 +124,7 @@ export default {
             d3.select(this.$refs.chartGroup).attr("transform", event.transform)
           )
       );
+
     },
 
     drawLegend() {
@@ -297,4 +299,5 @@ export default {
   font-family: sans-serif;
   font-size: 10px;
 }
+
 </style>

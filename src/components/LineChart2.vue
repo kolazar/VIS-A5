@@ -23,7 +23,6 @@ export default {
         left: 100,
       },
       circleRadius: 5,
-      epsilon: 1,
     };
   },
    mounted() {
@@ -35,7 +34,6 @@ export default {
 
       this.svg.selectAll("path").remove();
 
-      console.log(this.data);
 
       this.svg
         .append("g")
@@ -111,7 +109,6 @@ export default {
     },
 
     drawOneCountryLine() {
-      d3.select(".line2-axis-y-all").remove();
       d3.selectAll(".line2-all-countries").remove();
 
       this.svg
@@ -130,7 +127,7 @@ export default {
             .x((d) => this.x(this.dateParser(d[0])))
             .y((d) => {
               return this.yGroupByMonthYearCountryAllCountries(
-                d[2] + this.epsilon
+                d[2] 
               );
             })
             .curve(d3.curveLinear)
@@ -160,21 +157,30 @@ export default {
     },
 
     drawYAxisSpecificCountry() {
+
+      // d3.select(".line2-axis-y-all").remove();
+
       d3.select(".line2-axis-y-specific").remove();
 
-      this.svg
-        .append("g")
-        .attr("class", "line2-axis-y-specific")
+      // this.svg
+      //   .append("g")
+      //   .attr("class", "line2-axis-y-specific")
+         this.svg.select('.line2-axis-y-all')
+        .transition()
+        .duration(1000)
         .call(d3.axisLeft(this.yGroupByMonthYearCountryAllCountries))
-        .raise()
-        .append("text")
-        .attr("transform", "rotate(-90)")
-        .attr("x", -6)
-        .attr("y", 6)
-        .attr("dy", "0.71em")
-        .attr("text-anchor", "end")
-        .attr("fill", "black")
-        .text("Stringency Index");
+        
+        
+       
+        // .raise()
+        // .append("text")
+        // .attr("transform", "rotate(-90)")
+        // .attr("x", -6)
+        // .attr("y", 6)
+        // .attr("dy", "0.71em")
+        // .attr("text-anchor", "end")
+        // .attr("fill", "black")
+        // .text("Stringency Index");
     },
 
     deleteOneCountryLine() {
@@ -199,7 +205,6 @@ export default {
         return [this.x(this.dateParser(d[0])), this.y(d[1])];
       });
 
-     console.log(points);
 
 
       let delaunay = d3.Delaunay.from(points);
@@ -258,7 +263,7 @@ export default {
       let points = data.map((d) => {
         return [
           this.x(this.dateParser(d[0])),
-          this.yGroupByMonthYearCountryAllCountries(d[3] + this.epsilon),
+          this.yGroupByMonthYearCountryAllCountries(d[3] ),
         ];
       });
 
@@ -295,7 +300,7 @@ export default {
           "transform",
           `translate(${this.x(this.dateParser(data[0]))},
           ${this.yGroupByMonthYearCountryAllCountries(
-            data[3] > 0 ? data[3] : data[3] + this.epsilon
+            data[3] > 0 ? data[3] : data[3] 
           )})`
         );
 
@@ -448,9 +453,9 @@ export default {
 
     y() {
       return d3
-        .scaleLog()
+        .scaleLinear()
         .domain([
-          this.epsilon,
+          0,
           d3.max(this.groupByMonthYearAllCountries, (d) =>
             d[1]
           ),
@@ -460,9 +465,9 @@ export default {
     },
     yGroupByMonthYearCountryAllCountries() {
       return d3
-        .scaleLog()
+        .scaleLinear()
         .domain([
-          this.epsilon,
+          0,
           d3.max(this.groupByMonthYearCountry, (d) =>
             d[2]
           ),

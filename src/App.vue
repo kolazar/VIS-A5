@@ -19,15 +19,16 @@
       <div class="row">
         <h2 id="loading-message">Loading...</h2>
 </div>
-          <!-- <div id="hide-screen" class="col-md-12" style = "display: none"> -->
+          <div id="hide-screen" class="col-md-12" style = "display: none">
 
 
  <div class="row">
-        <div class="col-md-12">Control Plane
+        <div class="col-md-12">
               <ChoroplethMap />
 
         </div>
       </div>
+    
 
           <div class="row">
             <div class="col-md-4">
@@ -43,7 +44,7 @@
           </div>
        </div>
     </div>
-  <!-- </div> -->
+  </div>
 </template>
 
 <script>

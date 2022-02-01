@@ -64,6 +64,62 @@ const store = new Vuex.Store({
       for (let i = 0; i < state.data.length; i++) {
 
 
+        if (12 === d3.timeParse("%d/%m/%Y")(state.data[i].date).getMonth() + 1
+          && 2021 === d3.timeParse("%d/%m/%Y")(state.data[i].date).getFullYear()
+          && !(state.data[i].iso_code.startsWith("OWID"))) {
+
+          result.push({
+            isoCode: state.data[i].iso_code,
+            countryName: state.data[i].location,
+            date: d3.timeParse("%d/%m/%Y")(state.data[i].date),
+            newDeathsSmoothedMillion: +state.data[i].new_deaths_smoothed_per_million > 0
+              ? +state.data[i].new_deaths_smoothed_per_million
+              : undefined,
+            newVaccinesSmoothedMillion: +state.data[i].new_vaccinations_smoothed_per_million,
+            newCasesSmoothedMillion: +state.data[i].new_cases_smoothed_per_million,
+
+          })
+        }
+
+
+      }
+      let valuesToSum = ["newDeathsSmoothedMillion", "newVaccinesSmoothedMillion"];
+      let resultMap = d3.flatRollup(
+        result,
+        (v) =>
+          Object.fromEntries(
+            valuesToSum.map((col) => [col, d3.sum(v, (d) => d[col])])
+          ),
+        (d) => d.isoCode,
+        (d) => d.countryName,
+      );
+
+      let finalResult = []
+      for (let i = 0; i < resultMap.length; i++) {
+
+
+        finalResult.push({
+          countryName: resultMap[i][1],
+          newDeathsSmoothedMillion: resultMap[i][2].newDeathsSmoothedMillion,
+          newVaccinesSmoothedMillion: resultMap[i][2].newVaccinesSmoothedMillion,
+          isoCode: resultMap[i][0],
+        })
+
+
+      }
+
+      return finalResult;
+    },
+
+
+    scatterPlotData1(state) {
+      let result = []
+
+
+
+      for (let i = 0; i < state.data.length; i++) {
+
+
         if (+state.selectedDate.split("/")[0] === d3.timeParse("%d/%m/%Y")(state.data[i].date).getMonth() + 1
           && +state.selectedDate.split("/")[1] === d3.timeParse("%d/%m/%Y")(state.data[i].date).getFullYear()
           && !(state.data[i].iso_code.startsWith("OWID"))) {
@@ -110,6 +166,7 @@ const store = new Vuex.Store({
 
       return finalResult;
     },
+
 
 
     choroplethMapData(state) {
@@ -301,7 +358,7 @@ const store = new Vuex.Store({
         Object.freeze(d);
         state.data = d;
         document.getElementById('loading-message').remove();
-        // document.getElementById('hide-screen').style.display = null;
+        document.getElementById('hide-screen').style.display = null;
       })
 
 

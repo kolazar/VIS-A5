@@ -66,7 +66,10 @@ export default {
         .raise()
         .append("text")
         .attr("y", 40)
-        .attr("x", this.svgWidth / 2)
+        .attr(
+          "x",
+          (this.svgHeight - this.svgPadding.top - this.svgPadding.bottom) / 2
+        )
         .attr("text-anchor", "middle")
         .attr("fill", "black")
         .text("New deaths smoothed per million");
@@ -126,13 +129,13 @@ export default {
         )
         .merge(circlesGroup)
 
-        // .attr("cx", (d) => {
-        //   return this.xScale(d.newDeathsSmoothedMillion);
-        // })
+        .attr("cx", (d) => {
+          return this.xScale(d.newDeathsSmoothedMillion);
+        })
 
-        // .attr("cy", (d) => {
-        //   return this.yScale(d.newVaccinesSmoothedMillion);
-        // })
+        .attr("cy", (d) => {
+          return this.yScale(d.newVaccinesSmoothedMillion);
+        })
 
         .attr("fill", "steelblue")
         .on("click", (event, d) => this.mouseClick(d))
@@ -145,41 +148,69 @@ export default {
           )}`;
         });
 
-
-// d3.selectAll(".scatterplot")
-//       .data(this.data).transition()
-//       .duration(1000)
-//        .ease(d3.easeQuadIn)
-//       .attr("cx", (d) => {
-//           return this.xScale(d.newDeathsSmoothedMillion);
-//         })
-// .transition()
-//       .duration(1000)
-//       .ease(d3.easeQuadIn)
-//         .attr("cy", (d) => {
-//           return this.yScale(d.newVaccinesSmoothedMillion);
-//         });
-
-
       // .on("mouseover", () => this.handleCircleMouseHover())
       // .on("mousemove", (event, d) =>
       //   this.handleCircleMouseMove(event, d.countryName)
       // )
       // .on("mouseleave", () => this.handleCircleMouseOut());
     },
-    updateScatterPlot() {
-      d3.selectAll(".scatterplot")
-      .data(this.data)
-      .transition()
-      .duration(1000)
-      .attr("cx", (d) => {
-          return this.xScale(d.newDeathsSmoothedMillion);
+    updateCircles() {
+      // this.svg.selectAll("title").remove();
+      //  this.svg.selectAll("circle").remove();
+
+      let circlesGroup = this.svg.selectAll("circle").data(this.data1);
+
+      circlesGroup.exit().remove();
+
+      circlesGroup
+        .enter()
+        .append("circle")
+        .attr("class", (d) => `scatterplot scatter-` + d.isoCode)
+        .attr("r", this.radius)
+        .attr("stroke", (d) =>
+          this.selectedCountries.includes(d.isoCode) ? "orange" : "#fff"
+        )
+        .attr("stroke-width", (d) =>
+          this.selectedCountries.includes(d.isoCode) ? 2 : null
+        )
+.attr("fill", "steelblue")
+
+        .merge(circlesGroup)
+        
+        .transition()
+        .duration(1000)
+        .delay((d, i) => {
+          return (i / this.data1.length) * 700;
         })
-.transition()
-      .duration(1000)
+        .attr("cx", (d) => {
+          return this.xScale1(d.newDeathsSmoothedMillion);
+        })
         .attr("cy", (d) => {
-          return this.yScale(d.newVaccinesSmoothedMillion);
+          return this.yScale1(d.newVaccinesSmoothedMillion);
+        })
+
+
+circlesGroup
+ .on("click", (event, d) => this.mouseClick(d))
+        .append("title")
+        .text((d) => {
+          return `${d.countryName}, New deaths: ${this.formatValue(
+            d.newDeathsSmoothedMillion
+          )},New vaccinations:${this.formatValue(
+            d.newVaccinesSmoothedMillion
+          )}`;
         });
+
+
+      d3.select(".scatterplot-x-axis")
+        .transition()
+        .duration(1000)
+        .call(d3.axisBottom(this.xScale1));
+
+      d3.select(".scatterplot-y-axis")
+        .transition()
+        .duration(1000)
+        .call(d3.axisLeft(this.yScale1));
     },
     mouseClick(data) {
       if (!this.selectedCountries.includes(data.isoCode)) {
@@ -187,9 +218,12 @@ export default {
         d3.selectAll(`.${data.isoCode}`)
           .attr("stroke", "orange")
           .attr("stroke-width", 1.5);
+        // d3.selectAll(`.scatterplot`)
+        //   .attr('id','not-active-dot');
         d3.selectAll(`.scatter-${data.isoCode}`)
           .attr("stroke", "orange")
           .attr("stroke-width", 2);
+        // .attr('id','active-dot');
       } else {
         this.$store.commit("deleteSelectedCountry", data.isoCode);
 
@@ -220,6 +254,11 @@ export default {
     data: {
       get() {
         return this.$store.getters.scatterPlotData;
+      },
+    },
+    data1: {
+      get() {
+        return this.$store.getters.scatterPlotData1;
       },
     },
     selectedDate: {
@@ -280,6 +319,41 @@ export default {
         .domain([this.dataMinVaccines, this.dataMaxVaccines])
         .nice();
     },
+
+    dataMaxDeaths1() {
+      return d3.max(this.data1, (d) => d.newDeathsSmoothedMillion);
+    },
+    dataMinDeaths1() {
+      return d3.min(this.data1, (d) => d.newDeathsSmoothedMillion);
+    },
+    xScale1() {
+      return d3
+        .scaleLinear()
+        .rangeRound([
+          0,
+          this.svgWidth - this.svgPadding.left - this.svgPadding.right,
+        ])
+        .domain([this.dataMinDeaths1, this.dataMaxDeaths1])
+        .nice();
+    },
+
+    dataMaxVaccines1() {
+      return d3.max(this.data1, (d) => d.newVaccinesSmoothedMillion);
+    },
+    dataMinVaccines1() {
+      return d3.min(this.data1, (d) => d.newVaccinesSmoothedMillion);
+    },
+    yScale1() {
+      return d3
+        .scaleLinear()
+        .rangeRound([
+          this.svgHeight - this.svgPadding.top - this.svgPadding.bottom,
+          0,
+        ])
+        .domain([this.dataMinVaccines1, this.dataMaxVaccines1])
+        .nice();
+    },
+
     formatValue() {
       return d3.format(",.1f");
     },
@@ -292,10 +366,11 @@ export default {
 
       deep: true,
     },
+
     selectedDate: {
       handler() {
         // this.drawScatterPlot();
-        this.updateScatterPlot();
+        this.updateCircles();
       },
 
       deep: true,
@@ -304,7 +379,7 @@ export default {
 };
 </script>
 
-<style>
+<style >
 .tooltip {
   opacity: 0;
   background-color: white;
@@ -312,6 +387,13 @@ export default {
   border-width: 0.5px;
   border-radius: 3px;
   padding: 8px;
+}
+
+#active-dot {
+  opacity: 1;
+}
+#not-active-dot {
+  opacity: 0.1;
 }
 
 .scatterplot {

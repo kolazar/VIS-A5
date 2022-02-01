@@ -4301,7 +4301,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"d3-geo@npm:3":
+"d3-geo@npm:3, d3-geo@npm:^3.0.1":
   version: 3.0.1
   resolution: "d3-geo@npm:3.0.1"
   dependencies:
@@ -11718,6 +11718,7 @@ __metadata:
     bootstrap-vue: ^2.18.1
     core-js: ^3.6.5
     d3: 7.3.0
+    d3-geo: ^3.0.1
     eslint: ^6.7.2
     eslint-plugin-vue: ^6.2.2
     topojson: ^3.0.2
