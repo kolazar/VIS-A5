@@ -160,11 +160,15 @@ export default {
 
       let circlesGroup = this.svg.selectAll("circle").data(this.data1);
 
+      circlesGroup.attr("class", (d) => `scatterplot scatter-` + d.isoCode);
+
       circlesGroup.exit().remove();
 
       circlesGroup
         .enter()
         .append("circle")
+        .attr("cx", () => this.xScale1(0))
+        .attr("cy", () => this.yScale1(0 + this.innerHeight / 2))
         .attr("class", (d) => `scatterplot scatter-` + d.isoCode)
         .attr("r", this.radius)
         .attr("stroke", (d) =>
@@ -173,10 +177,20 @@ export default {
         .attr("stroke-width", (d) =>
           this.selectedCountries.includes(d.isoCode) ? 2 : null
         )
-.attr("fill", "steelblue")
-
+        .attr("fill", "steelblue")
+        .attr("id", (d) =>
+          !this.selectedCountries.includes(d.isoCode) ? "not-active-dot" : null
+        )
+        .append("title")
+        .text((d) => {
+          return `${d.countryName}, New deaths: ${this.formatValue(
+            d.newDeathsSmoothedMillion
+          )},New vaccinations:${this.formatValue(
+            d.newVaccinesSmoothedMillion
+          )}`;
+        })
         .merge(circlesGroup)
-        
+
         .transition()
         .duration(1000)
         .delay((d, i) => {
@@ -187,20 +201,15 @@ export default {
         })
         .attr("cy", (d) => {
           return this.yScale1(d.newVaccinesSmoothedMillion);
-        })
-
-
-circlesGroup
- .on("click", (event, d) => this.mouseClick(d))
-        .append("title")
-        .text((d) => {
-          return `${d.countryName}, New deaths: ${this.formatValue(
-            d.newDeathsSmoothedMillion
-          )},New vaccinations:${this.formatValue(
-            d.newVaccinesSmoothedMillion
-          )}`;
         });
 
+      circlesGroup.on("click", (event, d) => this.mouseClick(d));
+
+      circlesGroup.select("title").text((d) => {
+        return `${d.countryName}, New deaths: ${this.formatValue(
+          d.newDeathsSmoothedMillion
+        )},New vaccinations:${this.formatValue(d.newVaccinesSmoothedMillion)}`;
+      });
 
       d3.select(".scatterplot-x-axis")
         .transition()
@@ -215,20 +224,35 @@ circlesGroup
     mouseClick(data) {
       if (!this.selectedCountries.includes(data.isoCode)) {
         this.$store.commit("addSelectedCountry", data.isoCode);
-        d3.selectAll(`.${data.isoCode}`)
-          .attr("stroke", "orange")
+        d3.select(".map").selectAll("path").attr("id", "not-active-country");
+       
+             console.log(this.selectedCountries);
+         this.selectedCountries.forEach(element => {
+          d3.select(`.${element}`).attr("id", "active-country").attr("stroke", "orange")
           .attr("stroke-width", 1.5);
-        // d3.selectAll(`.scatterplot`)
-        //   .attr('id','not-active-dot');
-        d3.selectAll(`.scatter-${data.isoCode}`)
-          .attr("stroke", "orange")
-          .attr("stroke-width", 2);
-        // .attr('id','active-dot');
+        
+      });
+       
+       d3.selectAll(`.scatterplot`)
+          .attr('id','not-active-dot');
+       
+
+      this.selectedCountries.forEach(element => {
+          d3.select(`.scatter-${element}`).attr("id", "active-dot");
+        
+      });
       } else {
         this.$store.commit("deleteSelectedCountry", data.isoCode);
 
-        d3.selectAll(`.${data.isoCode}`).attr("stroke", null);
-        d3.selectAll(`.scatter-${data.isoCode}`).attr("stroke", null);
+        if (this.selectedCountries.length === 0) {
+           d3.selectAll(`.scatterplot`).attr("id", null);
+           d3.select(".map").selectAll("path").attr("id", null).attr("stroke", null)
+          .attr("stroke-width", null)
+        } else {
+           d3.selectAll(`.${data.isoCode}`).attr("id", 'not-active-country').attr("stroke", null)
+          .attr("stroke-width", null);
+          d3.selectAll(`.scatter-${data.isoCode}`).attr("id", "not-active-dot");
+        }
       }
     },
     // handleCircleMouseHover() {
@@ -276,7 +300,12 @@ circlesGroup
         return this.$store.getters.countryToAdd;
       },
     },
-
+    innerHeight() {
+      return this.svgHeight - this.svgPadding.top - this.svgPadding.bottom;
+    },
+    innerWidth() {
+      return this.svgWidth - this.svgPadding.left - this.svgPadding.right;
+    },
     svg() {
       return d3
         .select(this.$refs.chartGroup)
@@ -295,10 +324,7 @@ circlesGroup
     xScale() {
       return d3
         .scaleLinear()
-        .rangeRound([
-          0,
-          this.svgWidth - this.svgPadding.left - this.svgPadding.right,
-        ])
+        .rangeRound([0, this.innerWidth])
         .domain([this.dataMinDeaths, this.dataMaxDeaths])
         .nice();
     },
@@ -312,10 +338,7 @@ circlesGroup
     yScale() {
       return d3
         .scaleLinear()
-        .rangeRound([
-          this.svgHeight - this.svgPadding.top - this.svgPadding.bottom,
-          0,
-        ])
+        .rangeRound([this.innerHeight, 0])
         .domain([this.dataMinVaccines, this.dataMaxVaccines])
         .nice();
     },
@@ -329,10 +352,7 @@ circlesGroup
     xScale1() {
       return d3
         .scaleLinear()
-        .rangeRound([
-          0,
-          this.svgWidth - this.svgPadding.left - this.svgPadding.right,
-        ])
+        .rangeRound([0, this.innerWidth])
         .domain([this.dataMinDeaths1, this.dataMaxDeaths1])
         .nice();
     },
@@ -346,10 +366,7 @@ circlesGroup
     yScale1() {
       return d3
         .scaleLinear()
-        .rangeRound([
-          this.svgHeight - this.svgPadding.top - this.svgPadding.bottom,
-          0,
-        ])
+        .rangeRound([this.innerHeight, 0])
         .domain([this.dataMinVaccines1, this.dataMaxVaccines1])
         .nice();
     },
@@ -391,6 +408,9 @@ circlesGroup
 
 #active-dot {
   opacity: 1;
+  stroke: orange;
+
+  stroke-width: 2;
 }
 #not-active-dot {
   opacity: 0.1;
@@ -398,5 +418,6 @@ circlesGroup
 
 .scatterplot {
   opacity: 0.5;
+  cursor: pointer;
 }
 </style>

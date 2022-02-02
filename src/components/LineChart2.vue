@@ -18,9 +18,9 @@ export default {
       svgHeight: 500,
       svgPadding: {
         top: 20,
-        right: 20,
+        right: 100,
         bottom: 50,
-        left: 100,
+        left: 50,
       },
       circleRadius: 5,
     };

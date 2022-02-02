@@ -18,9 +18,9 @@ export default {
       svgHeight: 500,
       svgPadding: {
         top: 20,
-        right: 20,
+        right: 100,
         bottom: 50,
-        left: 100,
+        left: 50,
       },
       circleRadius: 5,
       epsilon: 1,
@@ -28,7 +28,6 @@ export default {
   },
   mounted() {
     this.drawAllCountriesLine();
-    this.drawLegend();
   },
   methods: {
     drawAllCountriesLine() {
@@ -105,6 +104,8 @@ export default {
       this.drawVoronoiAllCountries(
         this.groupByMonthYearAllCountriesVaccinesCases
       );
+    this.drawLegend();
+
     },
 
     drawXAxis() {
@@ -221,13 +222,8 @@ export default {
     },
 
     drawYAxisSpecificCountry() {
-      //  this.svg.select(".line1-axis-y-all").remove();
+     
 
-      this.svg.select(".axis-y-specific").remove();
-
-      // this.svg
-      //   .append("g")
-      //   .attr("class", "axis-y-specific")
       this.svg
         .select(".line1-axis-y-all")
 
@@ -235,15 +231,6 @@ export default {
         .duration(1000)
         .call(d3.axisLeft(this.yGroupByMonthYearCountryAllCountries));
 
-      // .raise()
-      // .append("text")
-      // .attr("transform", "rotate(-90)")
-      // .attr("x", -6)
-      // .attr("y", 6)
-      // .attr("dy", "0.71em")
-      // .attr("text-anchor", "end")
-      // .attr("fill", "black")
-      // .text("New Cases Smoothed per Million");
     },
 
     deleteOneCountryLine() {
@@ -376,7 +363,7 @@ export default {
           isoCode: data[i][1],
           countryName: data[i][2],
           val:
-            data[i][3].newVaccinesSmoothedMillion > 0
+            data[i][3].newVaccinesSmoothedMillion >= 1
               ? data[i][3].newVaccinesSmoothedMillion
               : data[i][3].newVaccinesSmoothedMillion + this.epsilon,
         });
@@ -416,6 +403,9 @@ export default {
     },
 
     onHoverVoronoi(data, data1, data2) {
+
+
+
       this.svg.selectAll("path").attr("id", "not-active");
       this.svg.selectAll(".voronoi g").remove();
 
@@ -431,7 +421,7 @@ export default {
           "transform",
           `translate(${this.x(this.dateParser(data.date))},
           ${this.yGroupByMonthYearCountryAllCountries(
-            data.val > 0 ? data.val : data.val + this.epsilon
+            data.val >= 1 ? data.val : data.val + this.epsilon
           )})`
         );
 
@@ -466,7 +456,7 @@ export default {
           "transform",
           `translate(${this.x(this.dateParser(valueTooltip1.date))},
           ${this.yGroupByMonthYearCountryAllCountries(
-            valueTooltip1.val > 0
+            valueTooltip1.val >= 1
               ? valueTooltip1.val
               : valueTooltip1.val + this.epsilon
           )})`
@@ -487,11 +477,13 @@ export default {
     },
 
     drawLegend() {
-      let legendGroup = this.svg.append("g").attr("class", "line1-legend")
-        .attr("transform", "translate(90,100)")
-      ;
 
+this.svg.select('.line1-legend').remove()
 
+      let legendGroup = this.svg
+        .append("g")
+        .attr("class", "line1-legend")
+        .attr("transform", "translate(90,100)");
       legendGroup
         .append("line")
         .attr("stroke-width", 4)
@@ -500,7 +492,6 @@ export default {
         .attr("x2", 50)
         .attr("y1", 0)
         .attr("y2", 0)
-        .text("New Cases");
       legendGroup
         .append("line")
         .attr("stroke-width", 4)
@@ -508,12 +499,20 @@ export default {
         .attr("x1", 0)
         .attr("x2", 50)
         .attr("y1", 40)
-        .attr("y2",40)
-        legendGroup.append("text")
+        .attr("y2", 40);
+         legendGroup
+        .append("text")
         .attr("font-weight", "bold")
-        .attr("dy", "0.71em")
+        .attr("dy", "0.31em")
+        .attr("text-anchor", "middle")
+        .text("New Cases");
+      legendGroup
+        .append("text")
+        .attr("font-weight", "bold")
+        .attr("dy", "0.11em")
         .attr("text-anchor", "middle")
         .text("New Vaccines");
+       
     },
 
     mouseClick(data) {
@@ -751,5 +750,6 @@ export default {
 .voronoi path {
   fill: none;
   pointer-events: all;
+  cursor: pointer;
 }
 </style>

@@ -7,7 +7,7 @@
         </div>
       </div>
       <div class="row">
-        <div class="col-md-12">Control Plane
+        <div class="col-md-12">
           <ControlPlane/>
         </div>
       </div>
@@ -83,6 +83,9 @@ export default {
 
 text {
   font-family: Avenir, Helvetica, Arial, sans-serif;
+}
+p{
+   font-size: 18px;
 }
 
 </style>

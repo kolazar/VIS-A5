@@ -1,9 +1,14 @@
 <template>
   <div class="vis-component" ref="chart">
     <svg class="main-svg" :width="svgWidth" :height="svgHeight">
-  <rect class="zoom" :width="svgWidth" :height="svgHeight"></rect>
       <g class="chart-group" ref="chartGroup">
-        <g class="rects-group" ref="rects"></g>
+        <rect
+          class="zoom"
+          cursor="move"
+          :x="this.innerWidth / 4"
+          :width="this.innerWidth / 2"
+          :height="this.innerHeight"
+        ></rect>
       </g>
     </svg>
   </div>
@@ -39,29 +44,26 @@ export default {
       },
 
       n: 3,
-      k: 13.5,
+      k: 20,
       labels: ["low", "medium", "high"],
     };
   },
   mounted() {
     this.drawMap();
-   
-
   },
   methods: {
     drawMap() {
-
-
       if (this.$refs.chart) this.svgWidth = this.$refs.chart.clientWidth;
 
-
-      this.svg.selectAll('.title-country').remove()
+      this.svg.selectAll(".title-country").remove();
+      this.svg.select(".map").remove();
 
       let projection = d3
-        .geoMercator()
-        .scale(100)
+        .geoNaturalEarth1()
+        // .scale(100)
+        .fitSize([this.svgWidth, this.svgHeight], mapWorld)
         .rotate([0, 0])
-        .center([0, 60])
+        .center([0, 20])
         .translate([this.innerWidth / 2, this.innerHeight / 2]);
 
       let path = d3.geoPath().projection(projection);
@@ -69,11 +71,14 @@ export default {
       let data = this.data;
 
       this.svg
+        .append("g")
+        .attr("class", "map")
         .selectAll("path")
         .data(mapWorld.features)
         .join("path")
         .attr("d", path)
         .attr("class", (d) => d.id)
+        .attr("cursor", "pointer")
         .attr("fill", (d) => {
           if (data.get(d.id) !== undefined)
             return this.color([
@@ -83,59 +88,86 @@ export default {
         })
         .on("click", (event, d) => this.handleStateClick(d.id))
         .append("title")
-        .attr('class','title-country')
+        .attr("class", "title-country")
         .text((d) => {
           if (data.get(d.id) !== undefined)
-            return `${data.get(d.id).countryName}, ${data.get(d.id)}`;
+            return `${data.get(d.id).countryName}, ${
+              data.get(d.id).cardiovascDeathRate
+            },${data.get(d.id).diabetesPrevalence}`;
         })
         .raise();
 
-
-       this.drawLegend();
+      this.drawLegend();
 
       this.initializeZoom();
-
     },
     handleStateClick(data) {
       if (!this.selectedCountries.includes(data)) {
         this.$store.commit("addSelectedCountry", data);
-        d3.selectAll(`.${data}`)
-          .attr("stroke", "orange")
+       
+         d3.select(".map").selectAll("path").attr("id", "not-active-country");
+       
+             
+         this.selectedCountries.forEach(element => {
+          d3.select(`.${element}`).attr("id", "active-country").attr("stroke", "orange")
           .attr("stroke-width", 1.5);
-          d3.selectAll(`.scatter-${data.isoCode}`).attr("stroke", "orange")
-        .attr( "stroke-width", 2);
-      } else {
+        
+      });
+       
+       d3.selectAll(`.scatterplot`)
+          .attr('id','not-active-dot');
+       
+
+      this.selectedCountries.forEach(element => {
+          d3.select(`.scatter-${element}`).attr("id", "active-dot");
+        
+      });
+
+      } 
+
+else {
         this.$store.commit("deleteSelectedCountry", data);
 
-        d3.selectAll(`.${data}`).attr("stroke", null);
-        d3.selectAll(`.scatter-${data.isoCode}`).attr("stroke", null)
-        
-      }
+        if (this.selectedCountries.length === 0) {
+          d3.selectAll(`.scatterplot`).attr("id", null);
+           d3.select(".map").selectAll("path").attr("id", null).attr("stroke", null)
+          .attr("stroke-width", null)
+        } else {
+          
+          d3.selectAll(`.${data}`).attr("id", 'not-active-country').attr("stroke", null)
+          .attr("stroke-width", null);
+          d3.selectAll(`.scatter-${data}`).attr("id", "not-active-dot");
+        }
+
+}
+
+
     },
 
     initializeZoom() {
-   
-
-this.svg.call(
+      this.svg.call(
         d3
           .zoom()
           .scaleExtent([1, 8])
-          .on("zoom", (event) =>
-            d3.select(this.$refs.chartGroup).attr("transform", event.transform)
-          )
+          .on("zoom", (event) => this.svg.attr("transform", event.transform))
       );
 
+      d3.select(".zoom").call(
+        d3
+          .zoom()
+          .scaleExtent([1, 8])
+          .on("zoom", (event) => this.svg.attr("transform", event.transform))
+      );
     },
 
     drawLegend() {
-
-      this.svg.select(".legend").remove()
+      this.svg.select(".legend").remove();
 
       let legend = d3
         .select(this.$refs.chartGroup)
         .append("g")
         .attr("class", "legend")
-        .attr("transform", "translate(150,400)")
+        .attr("transform", `translate(${this.innerWidth / 4},400)`)
 
         .append("g")
         .attr(
@@ -153,7 +185,7 @@ this.svg.call(
         .attr("refY", 3)
         .attr("orient", "auto")
         .append("path")
-        .attr('class','marker-path')
+        .attr("class", "marker-path")
         .attr("d", "M0,0L9,3L0,6Z");
 
       legend
@@ -166,6 +198,8 @@ this.svg.call(
         .attr("y", (d) => d.y)
         .attr("height", (d) => d.height)
         .attr("fill", (d) => d.fill)
+        .on("mouseover", (event, d) => this.handleLegendMouseOver(d))
+        .on("mouseout", () => this.handleLegendMouseOut())
         .append("title")
         .text((d) => d.label);
 
@@ -205,6 +239,21 @@ this.svg.call(
         )
         .attr("text-anchor", "middle")
         .text("Diabetes");
+    },
+
+    handleLegendMouseOver(data) {
+      console.log('test');
+      d3.select(".map").selectAll("path").attr("id", "not-active-country");
+
+      this.svg
+        .selectAll("path")
+        .filter(function () {
+          return d3.select(this).attr("fill") == data.fill; 
+        })
+        .attr("id", "active-country");
+    },
+    handleLegendMouseOut() {
+      this.svg.selectAll("path").attr("id", "active-country");
     },
   },
   computed: {
@@ -249,8 +298,8 @@ this.svg.call(
     },
     rectangularProps() {
       let rectData = [];
-      let plotAreaWidth = 40;
-      let plotAreaHeight = 40;
+      let plotAreaWidth = 60;
+      let plotAreaHeight = 60;
 
       //Calculating properties for the rectangles
       d3.cross(d3.range(this.n), d3.range(this.n)).map(([i, j]) => {
@@ -300,4 +349,10 @@ this.svg.call(
   font-size: 10px;
 }
 
+#active-country {
+  opacity: 1;
+}
+#not-active-country {
+  opacity: 0.1;
+}
 </style>
