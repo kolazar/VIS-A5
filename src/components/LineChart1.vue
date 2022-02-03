@@ -24,7 +24,7 @@ export default {
       },
       circleRadius: 5,
       epsilon: 1,
-      legendTextSpacing: 7,
+      legendTextSpacing: 10,
     };
   },
   mounted() {
@@ -34,13 +34,12 @@ export default {
     drawAllCountriesLine() {
       if (this.$refs.chart) this.svgWidth = this.$refs.chart.clientWidth;
 
+
       this.svg.selectAll("path").remove();
 
       this.drawXAxis();
       this.drawYAxisAllCountries();
-      this.drawVoronoiAllCountries(
-        this.groupByMonthYearAllCountriesVaccinesCases
-      );
+     
       this.drawLegend();
 
       this.svg
@@ -107,6 +106,13 @@ export default {
         .duration(3000)
         .ease(d3.easeLinear)
         .attr("stroke-dashoffset", 0);
+
+
+
+ this.drawVoronoiAllCountries(
+        this.groupByMonthYearAllCountriesVaccinesCases
+      );
+
     },
 
     drawXAxis() {
@@ -408,6 +414,7 @@ export default {
       let lineChartTooltip = this.svg
         .select(".voronoi")
         .append("g")
+        .raise()
         .attr(
           "transform",
           `translate(${this.x(this.dateParser(date))},
@@ -475,30 +482,30 @@ export default {
 
       legendGroupCases
         .append("circle")
-        .attr("cx", this.innerWidth - 20)
-        .attr("cy", this.innerHeight - 100)
+        .attr("cx", 40)
+        .attr("cy",  20)
         .attr("r", 7)
         .attr("fill", "#062f5c");
 
       legendGroupCases
         .append("text")
-        .attr("x", this.innerWidth - this.legendTextSpacing)
-        .attr("y", this.innerHeight - 100)
+        .attr("x", 40 + this.legendTextSpacing)
+        .attr("y", 20)
         .attr("dy", ".32em")
         .text("Cases");
 
       let legendGroupVaccines = legendGroup.append("g");
       legendGroupVaccines
         .append("circle")
-        .attr("cx", this.innerWidth - 20)
-        .attr("cy", this.innerHeight - 70)
+        .attr("cx", 40)
+        .attr("cy", 50)
         .attr("r", 7)
         .attr("fill", "#9e0a2f");
 
       legendGroupVaccines
         .append("text")
-        .attr("x", this.innerWidth - this.legendTextSpacing)
-        .attr("y", this.innerHeight - 70)
+        .attr("x", 40+ this.legendTextSpacing)
+        .attr("y", 50)
         .attr("dy", ".32em")
         .text("Vaccines");
     },

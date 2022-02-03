@@ -357,8 +357,10 @@ const store = new Vuex.Store({
       d3.csv('./owid-covid-data-reduced.csv').then((d) => {
         Object.freeze(d);
         state.data = d;
-        document.getElementById('loading-message').remove();
         document.getElementById('hide-screen').style.display = null;
+        d3.select('.lds-roller').remove();
+        d3.select('.loading-message').remove();
+
       })
 
 
