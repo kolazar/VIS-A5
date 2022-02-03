@@ -17,25 +17,13 @@ export default {
   props: {},
   data() {
     return {
-      n: 3,
-      colors: [
-        "#b3b2b2",
-        "#e4acac",
-        "#c85a5a",
-        "#b0d5df",
-        "#907881",
-        "#985356",
-        "#64acbe",
-        "#627f8c",
-        "#574249",
-      ],
       svgWidth: 500,
       svgHeight: 500,
       svgPadding: {
         top: 20,
-        right: 20,
+        right: 50,
         bottom: 50,
-        left: 100,
+        left: 50,
       },
       radius: 7,
     };
@@ -52,67 +40,59 @@ export default {
       this.drawCircles();
     },
     drawXAxis() {
+      d3.select(".scatterplot-axes").remove();
       d3.select(".scatterplot-x-axis").remove();
+
+      this.svg.append("g").attr("class", "scatterplot-axes");
+
       this.svg
+        .select(".scatterplot-axes")
         .append("g")
-        .attr(
-          "transform",
-          `translate( 0, ${
-            this.svgHeight - this.svgPadding.top - this.svgPadding.bottom
-          } )`
-        )
+        .attr("transform", `translate( 0, ${this.innerHeight} )`)
         .attr("class", "scatterplot-x-axis")
-        .call(d3.axisBottom(this.xScale))
-        .raise()
-        .append("text")
-        .attr("y", 40)
-        .attr(
-          "x",
-          (this.svgHeight - this.svgPadding.top - this.svgPadding.bottom) / 2
+        .call(
+          d3
+            .axisBottom(this.xScale)
+            .tickSize(-this.innerHeight)
+            .tickSizeOuter(6)
         )
+
+        .append("text")
+        .attr("class", "scatterplot-axes-text")
+        .attr("y", 30)
+        .attr("x", this.innerWidth / 2)
         .attr("text-anchor", "middle")
-        .attr("fill", "black")
         .text("New deaths smoothed per million");
     },
 
     drawYAxis() {
       d3.select(".scatterplot-y-axis").remove();
       this.svg
+        .select(".scatterplot-axes")
         .append("g")
         .attr("class", "scatterplot-y-axis")
-        .call(d3.axisLeft(this.yScale))
-        .raise()
+        .call(
+          d3.axisLeft(this.yScale).tickSize(-this.innerWidth).tickSizeOuter(6)
+        )
         .append("text")
+        .attr("class", "scatterplot-axes-text")
         .attr("transform", "rotate(-90)")
         .attr("x", -6)
         .attr("y", 6)
         .attr("dy", "0.71em")
         .attr("text-anchor", "end")
-        .attr("fill", "black")
-        .text("New vaccines smoothed per million");
+        .text("New vaccines smoothed per million")
+        .raise();
     },
     drawCircles() {
-      // let brush = d3
-      //   .brush()
-      //   .extent([
-      //     [0, 0],
-      //     [
-      //       this.svgWidth - this.svgPadding.left - this.svgPadding.right,
-      //       this.svgHeight - this.svgPadding.top - this.svgPadding.bottom,
-      //     ],
-      //   ])
-      //   .on("start brush", (event) => {
-      //     return this.brush(event);
-      //   });
-
-      // d3.select(this.$refs.brush).call(brush);
-
-      // let sumstat = d3.group(this.data, (d) => d.isoCode);
-
       this.svg.selectAll("title").remove();
       this.svg.selectAll("circle").remove();
 
-      let circlesGroup = this.svg.selectAll("circle").data(this.data);
+      let circlesGroup = this.svg
+        .select(".circles-group")
+        .raise()
+        .selectAll("circle")
+        .data(this.data);
 
       circlesGroup.exit().remove();
 
@@ -140,25 +120,18 @@ export default {
         .attr("fill", "steelblue")
         .on("click", (event, d) => this.mouseClick(d))
         .append("title")
-        .text((d) => {
-          return `${d.countryName}, New deaths: ${this.formatValue(
-            d.newDeathsSmoothedMillion
-          )},New vaccinations:${this.formatValue(
-            d.newVaccinesSmoothedMillion
-          )}`;
-        });
+        .text((d) => this.createTooltipText(d));
 
-      // .on("mouseover", () => this.handleCircleMouseHover())
-      // .on("mousemove", (event, d) =>
-      //   this.handleCircleMouseMove(event, d.countryName)
-      // )
-      // .on("mouseleave", () => this.handleCircleMouseOut());
     },
     updateCircles() {
-      // this.svg.selectAll("title").remove();
-      //  this.svg.selectAll("circle").remove();
+      if (this.selectedCountries.length !== 0) {
+        d3.selectAll(`.scatterplot`).attr("id", "not-active-dot");
+      }
 
-      let circlesGroup = this.svg.selectAll("circle").data(this.data1);
+      let circlesGroup = this.svg
+        .select(".circles-group")
+        .selectAll("circle")
+        .data(this.data1);
 
       circlesGroup.attr("class", (d) => `scatterplot scatter-` + d.isoCode);
 
@@ -171,24 +144,15 @@ export default {
         .attr("cy", () => this.yScale1(0 + this.innerHeight / 2))
         .attr("class", (d) => `scatterplot scatter-` + d.isoCode)
         .attr("r", this.radius)
-        .attr("stroke", (d) =>
-          this.selectedCountries.includes(d.isoCode) ? "orange" : "#fff"
-        )
-        .attr("stroke-width", (d) =>
-          this.selectedCountries.includes(d.isoCode) ? 2 : null
-        )
+
         .attr("fill", "steelblue")
         .attr("id", (d) =>
-          !this.selectedCountries.includes(d.isoCode) ? "not-active-dot" : null
+          !this.selectedCountries.includes(d.isoCode)
+            ? "not-active-dot"
+            : "active-dot"
         )
         .append("title")
-        .text((d) => {
-          return `${d.countryName}, New deaths: ${this.formatValue(
-            d.newDeathsSmoothedMillion
-          )},New vaccinations:${this.formatValue(
-            d.newVaccinesSmoothedMillion
-          )}`;
-        })
+        .text((d) => this.createTooltipText(d))
         .merge(circlesGroup)
 
         .transition()
@@ -203,76 +167,74 @@ export default {
           return this.yScale1(d.newVaccinesSmoothedMillion);
         });
 
+      this.selectedCountries.forEach((element) => {
+        console.log(element);
+        d3.select(`.scatter-${element}`).attr("id", "active-dot");
+      });
+
       circlesGroup.on("click", (event, d) => this.mouseClick(d));
 
-      circlesGroup.select("title").text((d) => {
-        return `${d.countryName}, New deaths: ${this.formatValue(
-          d.newDeathsSmoothedMillion
-        )},New vaccinations:${this.formatValue(d.newVaccinesSmoothedMillion)}`;
-      });
+      circlesGroup.select("title").text((d) => this.createTooltipText(d));
 
       d3.select(".scatterplot-x-axis")
         .transition()
         .duration(1000)
-        .call(d3.axisBottom(this.xScale1));
+        .call(
+          d3
+            .axisBottom(this.xScale1)
+            .tickSize(-this.innerHeight)
+            .tickSizeOuter(6)
+        );
 
       d3.select(".scatterplot-y-axis")
         .transition()
         .duration(1000)
-        .call(d3.axisLeft(this.yScale1));
+        .call(
+          d3.axisLeft(this.yScale1).tickSize(-this.innerWidth).tickSizeOuter(6)
+        );
     },
+    
+createTooltipText(d){
+        return `${d.countryName}, \nNew deaths: ${this.formatValue(
+          d.newDeathsSmoothedMillion
+        )},\nNew vaccinations: ${this.formatValue(d.newVaccinesSmoothedMillion)}`;
+      },
     mouseClick(data) {
       if (!this.selectedCountries.includes(data.isoCode)) {
         this.$store.commit("addSelectedCountry", data.isoCode);
         d3.select(".map").selectAll("path").attr("id", "not-active-country");
-       
-             console.log(this.selectedCountries);
-         this.selectedCountries.forEach(element => {
-          d3.select(`.${element}`).attr("id", "active-country").attr("stroke", "orange")
-          .attr("stroke-width", 1.5);
-        
-      });
-       
-       d3.selectAll(`.scatterplot`)
-          .attr('id','not-active-dot');
-       
 
-      this.selectedCountries.forEach(element => {
+        this.selectedCountries.forEach((element) => {
+          d3.select(`.${element}`)
+            .attr("id", "active-country")
+            .attr("stroke", "orange")
+            .attr("stroke-width", 1.5);
+        });
+
+        d3.selectAll(`.scatterplot`).attr("id", "not-active-dot");
+
+        this.selectedCountries.forEach((element) => {
           d3.select(`.scatter-${element}`).attr("id", "active-dot");
-        
-      });
+        });
       } else {
         this.$store.commit("deleteSelectedCountry", data.isoCode);
 
         if (this.selectedCountries.length === 0) {
-           d3.selectAll(`.scatterplot`).attr("id", null);
-           d3.select(".map").selectAll("path").attr("id", null).attr("stroke", null)
-          .attr("stroke-width", null)
+          d3.selectAll(`.scatterplot`).attr("id", null);
+          d3.select(".map")
+            .selectAll("path")
+            .attr("id", null)
+            .attr("stroke", null)
+            .attr("stroke-width", null);
         } else {
-           d3.selectAll(`.${data.isoCode}`).attr("id", 'not-active-country').attr("stroke", null)
-          .attr("stroke-width", null);
+          d3.selectAll(`.${data.isoCode}`)
+            .attr("id", "not-active-country")
+            .attr("stroke", null)
+            .attr("stroke-width", null);
           d3.selectAll(`.scatter-${data.isoCode}`).attr("id", "not-active-dot");
         }
       }
     },
-    // handleCircleMouseHover() {
-    //   return d3.select(".tooltip").style("opacity", 1);
-    // },
-    // handleCircleMouseMove(event, d) {
-    //   const [xm, ym] = d3.pointer(event);
-    //   return d3
-    //     .select(".tooltip")
-    //     .html(d)
-    //     .style("left", xm - 40 + "px")
-    //     .style("top", ym + "px");
-    // },
-    // handleCircleMouseOut() {
-    //   return d3
-    //     .select(".tooltip")
-    //     .transition()
-    //     .duration(250)
-    //     .style("opacity", 0);
-    // },
   },
   computed: {
     data: {
@@ -371,6 +333,8 @@ export default {
         .nice();
     },
 
+
+
     formatValue() {
       return d3.format(",.1f");
     },
@@ -386,7 +350,6 @@ export default {
 
     selectedDate: {
       handler() {
-        // this.drawScatterPlot();
         this.updateCircles();
       },
 
@@ -397,6 +360,18 @@ export default {
 </script>
 
 <style >
+.scatterplot-axes text {
+  fill: #635f5d;
+}
+
+.scatterplot-axes line {
+  stroke: #e5e2e0;
+}
+
+.scatterplot-axes .scatterplot-axes-text {
+  font-size: 14px;
+}
+
 .tooltip {
   opacity: 0;
   background-color: white;

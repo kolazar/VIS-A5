@@ -60,7 +60,6 @@ export default {
 
       let projection = d3
         .geoNaturalEarth1()
-        // .scale(100)
         .fitSize([this.svgWidth, this.svgHeight], mapWorld)
         .rotate([0, 0])
         .center([0, 20])
@@ -89,12 +88,7 @@ export default {
         .on("click", (event, d) => this.handleStateClick(d.id))
         .append("title")
         .attr("class", "title-country")
-        .text((d) => {
-          if (data.get(d.id) !== undefined)
-            return `${data.get(d.id).countryName}, ${
-              data.get(d.id).cardiovascDeathRate
-            },${data.get(d.id).diabetesPrevalence}`;
-        })
+        .text((d) => this.createTooltipText(d, data))
         .raise();
 
       this.drawLegend();
@@ -104,44 +98,39 @@ export default {
     handleStateClick(data) {
       if (!this.selectedCountries.includes(data)) {
         this.$store.commit("addSelectedCountry", data);
-       
-         d3.select(".map").selectAll("path").attr("id", "not-active-country");
-       
-             
-         this.selectedCountries.forEach(element => {
-          d3.select(`.${element}`).attr("id", "active-country").attr("stroke", "orange")
-          .attr("stroke-width", 1.5);
-        
-      });
-       
-       d3.selectAll(`.scatterplot`)
-          .attr('id','not-active-dot');
-       
 
-      this.selectedCountries.forEach(element => {
+        d3.select(".map").selectAll("path").attr("id", "not-active-country");
+
+        this.selectedCountries.forEach((element) => {
+          d3.select(`.${element}`)
+            .attr("id", "active-country")
+            .attr("stroke", "orange")
+            .attr("stroke-width", 1.5);
+        });
+
+        d3.selectAll(`.scatterplot`).attr("id", "not-active-dot");
+
+        this.selectedCountries.forEach((element) => {
           d3.select(`.scatter-${element}`).attr("id", "active-dot");
-        
-      });
-
-      } 
-
-else {
+        });
+      } else {
         this.$store.commit("deleteSelectedCountry", data);
 
         if (this.selectedCountries.length === 0) {
           d3.selectAll(`.scatterplot`).attr("id", null);
-           d3.select(".map").selectAll("path").attr("id", null).attr("stroke", null)
-          .attr("stroke-width", null)
+          d3.select(".map")
+            .selectAll("path")
+            .attr("id", null)
+            .attr("stroke", null)
+            .attr("stroke-width", null);
         } else {
-          
-          d3.selectAll(`.${data}`).attr("id", 'not-active-country').attr("stroke", null)
-          .attr("stroke-width", null);
+          d3.selectAll(`.${data}`)
+            .attr("id", "not-active-country")
+            .attr("stroke", null)
+            .attr("stroke-width", null);
           d3.selectAll(`.scatter-${data}`).attr("id", "not-active-dot");
         }
-
-}
-
-
+      }
     },
 
     initializeZoom() {
@@ -242,18 +231,37 @@ else {
     },
 
     handleLegendMouseOver(data) {
-      console.log('test');
       d3.select(".map").selectAll("path").attr("id", "not-active-country");
 
       this.svg
         .selectAll("path")
         .filter(function () {
-          return d3.select(this).attr("fill") == data.fill; 
+          return d3.select(this).attr("fill") == data.fill;
         })
         .attr("id", "active-country");
     },
     handleLegendMouseOut() {
-      this.svg.selectAll("path").attr("id", "active-country");
+      if (this.selectedCountries.length === 0)
+        d3.select(".map").selectAll("path").attr("id", "active-country");
+      else d3.select(".map").selectAll("path").attr("id", "not-active-country");
+
+      this.selectedCountries.forEach((element) => {
+        d3.select(`.${element}`)
+          .attr("id", "active-country")
+          .attr("stroke", "orange")
+          .attr("stroke-width", 1.5);
+      });
+    },
+
+    createTooltipText(d, data) {
+      if (data.get(d.id) !== undefined)
+        return `${
+          data.get(d.id).countryName
+        },\nCardiovascular death rate (annual number of deaths per 100,000 people): ${this.formatValue(
+          data.get(d.id).cardiovascDeathRate
+        )},\nDiabetes prevalence (% of population aged 20 to 79): ${
+          data.get(d.id).diabetesPrevalence
+        }`;
     },
   },
   computed: {
@@ -325,6 +333,9 @@ else {
 
         return this.colors[this.y(b) + this.x(a) * this.n];
       };
+    },
+    formatValue() {
+      return d3.format(",.0f");
     },
   },
 

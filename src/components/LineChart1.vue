@@ -18,12 +18,13 @@ export default {
       svgHeight: 500,
       svgPadding: {
         top: 20,
-        right: 100,
+        right: 50,
         bottom: 50,
         left: 50,
       },
       circleRadius: 5,
       epsilon: 1,
+      legendTextSpacing: 7,
     };
   },
   mounted() {
@@ -35,6 +36,13 @@ export default {
 
       this.svg.selectAll("path").remove();
 
+      this.drawXAxis();
+      this.drawYAxisAllCountries();
+      this.drawVoronoiAllCountries(
+        this.groupByMonthYearAllCountriesVaccinesCases
+      );
+      this.drawLegend();
+
       this.svg
         .append("g")
 
@@ -42,7 +50,6 @@ export default {
         .datum(this.groupByMonthYearAllCountriesVaccinesCases)
         .attr("class", "all-countries")
         .attr("id", "cases")
-
         .attr("fill", "none")
         .attr("stroke", "#062f5c")
         .attr("stroke-width", 2.5)
@@ -79,6 +86,7 @@ export default {
 
       this.svg
         .select(`#cases`)
+
         .attr("stroke-dasharray", totalLength + " " + totalLength)
         .attr("stroke-dashoffset", totalLength)
         .attr("id", "active-cases")
@@ -91,6 +99,7 @@ export default {
 
       this.svg
         .select(`#vaccines`)
+
         .attr("stroke-dasharray", totalLength + " " + totalLength)
         .attr("stroke-dashoffset", totalLength)
         .attr("id", "active-vaccines")
@@ -98,24 +107,23 @@ export default {
         .duration(3000)
         .ease(d3.easeLinear)
         .attr("stroke-dashoffset", 0);
-
-      this.drawXAxis();
-      this.drawYAxisAllCountries();
-      this.drawVoronoiAllCountries(
-        this.groupByMonthYearAllCountriesVaccinesCases
-      );
-    this.drawLegend();
-
     },
 
     drawXAxis() {
+      this.svg.select(".lines-axes").remove();
       this.svg.select(".line1-axis-x").remove();
 
+      this.svg.append("g").attr("class", "lines-axes");
+
       this.svg
+        .select(".lines-axes")
         .append("g")
         .attr("class", "line1-axis-x")
         .attr("transform", `translate(0,${this.innerHeight})`)
-        .call(d3.axisBottom(this.x));
+        .call(
+          d3.axisBottom(this.x).tickSize(-this.innerHeight).tickSizeOuter(6)
+        )
+        .lower();
     },
 
     drawYAxisAllCountries() {
@@ -123,18 +131,20 @@ export default {
       this.svg.select(".axis-y-specific").remove();
 
       this.svg
+        .select(".lines-axes")
         .append("g")
         .attr("class", "line1-axis-y-all")
-        .call(d3.axisLeft(this.y))
-        .raise()
+        .call(d3.axisLeft(this.y).tickSize(-this.innerWidth).tickSizeOuter(6))
+        .lower()
         .append("text")
+        .attr("class", "lines-axes-text")
         .attr("transform", "rotate(-90)")
         .attr("x", -6)
         .attr("y", 6)
         .attr("dy", "0.71em")
         .attr("text-anchor", "end")
-        .attr("fill", "black")
-        .text("New Cases/Vaccines Smoothed per Million");
+        .text("New Cases/Vaccines Smoothed per Million")
+        .raise();
     },
 
     drawOneCountryLine() {
@@ -222,15 +232,17 @@ export default {
     },
 
     drawYAxisSpecificCountry() {
-     
-
       this.svg
         .select(".line1-axis-y-all")
 
         .transition()
         .duration(1000)
-        .call(d3.axisLeft(this.yGroupByMonthYearCountryAllCountries));
-
+        .call(
+          d3
+            .axisLeft(this.yGroupByMonthYearCountryAllCountries)
+            .tickSize(-this.innerWidth)
+            .tickSizeOuter(6)
+        );
     },
 
     deleteOneCountryLine() {
@@ -304,47 +316,14 @@ export default {
       this.svg.selectAll("path").attr("id", "not-active");
       d3.selectAll(".voronoi g").remove();
 
-      let lineChartTooltip = this.svg
-        .select(".voronoi")
-        .append("g")
-        .attr(
-          "transform",
-          `translate(${this.x(this.dateParser(data.date))},
-          ${this.y(data.val)})`
-        );
+      this.createTooltip(data.date, data.val, undefined, true);
 
-      lineChartTooltip.append("circle").attr("r", this.circleRadius);
-      // .on("click", () =>
-      //   this.mouseClick(this.groupByMonthYearAllCountriesVaccinesCases)
-      // );
+      let dataTooltip1;
 
-      lineChartTooltip
-        .append("text")
-        .text(`${data.date},${this.formatValue(data.val)} `);
+      if (data2 !== undefined && data2.date === data.date) dataTooltip1 = data2;
+      else dataTooltip1 = data1;
 
-      let valueTooltip1;
-
-      if (data2 !== undefined && data2.date === data.date)
-        valueTooltip1 = data2;
-      else valueTooltip1 = data1;
-
-      let lineChartTooltip1 = this.svg
-        .select(".voronoi")
-        .append("g")
-        .attr(
-          "transform",
-          `translate(${this.x(this.dateParser(valueTooltip1.date))},
-          ${this.y(valueTooltip1.val)})`
-        );
-
-      lineChartTooltip1.append("circle").attr("r", this.circleRadius);
-      // .on("click", () =>
-      //   this.mouseClick(this.groupByMonthYearAllCountriesVaccinesCases)
-      // );
-
-      lineChartTooltip1
-        .append("text")
-        .text(`${valueTooltip1.date},${this.formatValue(valueTooltip1.val)} `);
+      this.createTooltip(dataTooltip1.date, dataTooltip1.val, undefined, true);
     },
 
     drawVoronoi(data) {
@@ -403,9 +382,6 @@ export default {
     },
 
     onHoverVoronoi(data, data1, data2) {
-
-
-
       this.svg.selectAll("path").attr("id", "not-active");
       this.svg.selectAll(".voronoi g").remove();
 
@@ -414,105 +390,117 @@ export default {
         .select(`.path-${data.isoCode}-vaccines`)
         .attr("id", "active-vaccines");
 
+      this.createTooltip(data.date, data.val, data.countryName);
+
+      let dataTooltip1;
+
+      if (data2 !== undefined && data2.date === data.date) dataTooltip1 = data2;
+      else dataTooltip1 = data1;
+
+      this.createTooltip(
+        dataTooltip1.date,
+        dataTooltip1.val,
+        dataTooltip1.countryName
+      );
+    },
+
+    createTooltip(date, value, countryName, allCountries) {
       let lineChartTooltip = this.svg
         .select(".voronoi")
         .append("g")
         .attr(
           "transform",
-          `translate(${this.x(this.dateParser(data.date))},
-          ${this.yGroupByMonthYearCountryAllCountries(
-            data.val >= 1 ? data.val : data.val + this.epsilon
-          )})`
+          `translate(${this.x(this.dateParser(date))},
+          ${
+            !allCountries
+              ? this.yGroupByMonthYearCountryAllCountries(
+                  value >= 1 ? value : value + this.epsilon
+                )
+              : this.y(value >= 1 ? value : value + this.epsilon)
+          })`
         );
-
-      //  lineChartTooltip.append("rect")
-      // .attr("class", "tooltip-frame")
-      // .attr("width", 150)
-      // .attr("height", 50)
 
       lineChartTooltip.append("circle").attr("r", this.circleRadius);
-      // .on("click", () =>
-      //   this.mouseClick(this.groupByMonthYearAllCountriesVaccinesCases)
-      // );
 
-      lineChartTooltip
+      if (countryName !== undefined) countryName = countryName + ", ";
+      else countryName = "";
+
+      this.createTooltipText(
+        lineChartTooltip,
+        "tooltip-text tooltip-text-stroke",
+        date,
+        countryName,
+        value
+      );
+      this.createTooltipText(
+        lineChartTooltip,
+        "tooltip-text",
+        date,
+        countryName,
+        value
+      );
+
+    },
+    createTooltipText(tooltip, className, date, countryName, value) {
+      tooltip
         .append("text")
+        .attr("class", className)
+        .attr("x", -10)
+        .attr("y", -10)
         .text(
-          `${data.date},${data.countryName},${this.formatValue(data.val)} `
-        );
-      // .attr("x", -70)
-      //   .attr("y", 18);
+          `${this.timeFormat(this.dateParser(date))},${countryName}` +
+            `Total: ` +
+            `${this.formatValue(value)} `
+        )
+        .raise();
 
-      let valueTooltip1;
+        
+      if (+date.split("/")[0] < 4 && +date.split("/")[1] === 2020)
+        tooltip
+          .selectAll(".tooltip-text")
+          .attr("id", "tooltip-text-start");
 
-      if (data2 !== undefined && data2.date === data.date)
-        valueTooltip1 = data2;
-      else valueTooltip1 = data1;
-
-      let lineChartTooltip1 = this.svg
-        .select(".voronoi")
-        .append("g")
-        .attr(
-          "transform",
-          `translate(${this.x(this.dateParser(valueTooltip1.date))},
-          ${this.yGroupByMonthYearCountryAllCountries(
-            valueTooltip1.val >= 1
-              ? valueTooltip1.val
-              : valueTooltip1.val + this.epsilon
-          )})`
-        );
-
-      lineChartTooltip1.append("circle").attr("r", this.circleRadius);
-      // .on("click", () =>
-      //   this.mouseClick(this.groupByMonthYearAllCountriesVaccinesCases)
-      // );
-
-      lineChartTooltip1
-        .append("text")
-        .text(
-          `${valueTooltip1.date},${
-            valueTooltip1.countryName
-          },${this.formatValue(valueTooltip1.val)} `
-        );
+      if (+date.split("/")[0] > 8 && +date.split("/")[1] === 2021)
+        tooltip
+          .selectAll(".tooltip-text")
+          .attr("id", "tooltip-text-end");
     },
 
     drawLegend() {
+      this.svg.select(".line1-legend").remove();
 
-this.svg.select('.line1-legend').remove()
+      let legendGroup = this.svg.append("g").attr("class", "line1-legend");
 
-      let legendGroup = this.svg
-        .append("g")
-        .attr("class", "line1-legend")
-        .attr("transform", "translate(90,100)");
-      legendGroup
-        .append("line")
-        .attr("stroke-width", 4)
-        .attr("stroke", "#062f5c")
-        .attr("x1", 0)
-        .attr("x2", 50)
-        .attr("y1", 0)
-        .attr("y2", 0)
-      legendGroup
-        .append("line")
-        .attr("stroke-width", 4)
-        .attr("stroke", "#9e0a2f")
-        .attr("x1", 0)
-        .attr("x2", 50)
-        .attr("y1", 40)
-        .attr("y2", 40);
-         legendGroup
+      let legendGroupCases = legendGroup.append("g");
+
+      legendGroupCases
+        .append("circle")
+        .attr("cx", this.innerWidth - 20)
+        .attr("cy", this.innerHeight - 100)
+        .attr("r", 7)
+        .attr("fill", "#062f5c");
+
+      legendGroupCases
         .append("text")
-        .attr("font-weight", "bold")
-        .attr("dy", "0.31em")
-        .attr("text-anchor", "middle")
-        .text("New Cases");
-      legendGroup
+        .attr("x", this.innerWidth - this.legendTextSpacing)
+        .attr("y", this.innerHeight - 100)
+        .attr("dy", ".32em")
+        .text("Cases");
+
+      let legendGroupVaccines = legendGroup.append("g");
+      legendGroupVaccines
+        .append("circle")
+        .attr("cx", this.innerWidth - 20)
+        .attr("cy", this.innerHeight - 70)
+        .attr("r", 7)
+        .attr("fill", "#9e0a2f");
+
+      legendGroupVaccines
         .append("text")
-        .attr("font-weight", "bold")
-        .attr("dy", "0.11em")
-        .attr("text-anchor", "middle")
-        .text("New Vaccines");
-       
+        .attr("x", this.innerWidth - this.legendTextSpacing)
+        .attr("y", this.innerHeight - 70)
+        .attr("dy", ".32em")
+        .text("Vaccines");
     },
 
     mouseClick(data) {
@@ -524,6 +512,9 @@ this.svg.select('.line1-legend').remove()
         d = x0 - this.dateParser(d0[0]) > this.dateParser(d1[0]) - x0 ? d1 : d0;
 
       this.$store.commit("changeSelectedDate", d[0]);
+
+      if (this.selectedCountries.length !== 0)
+        d3.selectAll(`.scatterplot`).attr("id", "not-active-dot");
     },
   },
 
@@ -688,6 +679,9 @@ this.svg.select('.line1-legend').remove()
     formatValue() {
       return d3.format(",.0f");
     },
+    timeFormat() {
+      return d3.timeFormat("%B %Y");
+    },
   },
 
   watch: {
@@ -725,11 +719,6 @@ this.svg.select('.line1-legend').remove()
 </script>
 
 <style>
-.tooltip-frame {
-  fill: white;
-  stroke: #000;
-}
-
 #active-cases {
   stroke: #062f5c;
   stroke-width: 2.5;
@@ -743,13 +732,19 @@ this.svg.select('.line1-legend').remove()
   stroke: #000;
 }
 
-/* circle {
+.line1-legend circle {
   cursor: pointer;
-} */
+}
 
 .voronoi path {
   fill: none;
   pointer-events: all;
   cursor: pointer;
+}
+
+.line1-legend text {
+  vertical-align: baseline;
+  font-size: 14px;
+  fill: #635f5d;
 }
 </style>

@@ -32,9 +32,15 @@ export default {
     drawAllCountriesLine() {
       if (this.$refs.chart) this.svgWidth = this.$refs.chart.clientWidth;
 
+ 
+
       this.svg.selectAll("path").remove();
 
-
+this.drawXAxis();
+      this.drawYAxisAllCountries();
+      this.drawVoronoiAllCountries(
+        this.groupByMonthYearAllCountries
+      );
       this.svg
         .append("g")
 
@@ -72,39 +78,38 @@ export default {
 
      
 
-      this.drawXAxis();
-      this.drawYAxisAllCountries();
-      this.drawVoronoiAllCountries(
-        this.groupByMonthYearAllCountries
-      );
+     
     },
 
     drawXAxis() {
+      this.svg.select(".lines-axes").remove();
       this.svg.select(".line2-axis-x").remove();
 
-      this.svg
+      this.svg.append('g').attr('class', 'lines-axes')
+
+      this.svg.select(".lines-axes")
         .append("g")
         .attr("class", "line2-axis-x")
         .attr("transform", `translate(0,${this.innerHeight})`)
-        .call(d3.axisBottom(this.x));
+        .call(d3.axisBottom(this.x).tickSize(-this.innerHeight).tickSizeOuter(6));
     },
 
     drawYAxisAllCountries() {
       this.svg.select(".line2-axis-y-all").remove();
      this.svg.select(".line2-axis-y-specific").remove();
 
-      this.svg
+      this.svg.select(".lines-axes")
         .append("g")
         .attr("class", "line2-axis-y-all")
-        .call(d3.axisLeft(this.y))
+        .call(d3.axisLeft(this.y).tickSize(-this.innerWidth).tickSizeOuter(6))
         .raise()
         .append("text")
+        .attr('class','lines-axes-text')
         .attr("transform", "rotate(-90)")
         .attr("x", -6)
         .attr("y", 6)
         .attr("dy", "0.71em")
         .attr("text-anchor", "end")
-        .attr("fill", "black")
         .text("Stringency Index");
     },
 
@@ -158,29 +163,13 @@ export default {
 
     drawYAxisSpecificCountry() {
 
-      // d3.select(".line2-axis-y-all").remove();
 
-      d3.select(".line2-axis-y-specific").remove();
 
-      // this.svg
-      //   .append("g")
-      //   .attr("class", "line2-axis-y-specific")
          this.svg.select('.line2-axis-y-all')
         .transition()
         .duration(1000)
-        .call(d3.axisLeft(this.yGroupByMonthYearCountryAllCountries))
-        
-        
-       
-        // .raise()
-        // .append("text")
-        // .attr("transform", "rotate(-90)")
-        // .attr("x", -6)
-        // .attr("y", 6)
-        // .attr("dy", "0.71em")
-        // .attr("text-anchor", "end")
-        // .attr("fill", "black")
-        // .text("Stringency Index");
+        .call(d3.axisLeft(this.yGroupByMonthYearCountryAllCountries).tickSize(-this.innerWidth).tickSizeOuter(6))
+     
     },
 
     deleteOneCountryLine() {
@@ -236,23 +225,9 @@ export default {
       this.svg.selectAll("path").attr("id", "not-active");
      this.svg.selectAll(".voronoi g").remove();
 
-      let lineChartTooltip = this.svg
-        .select(".voronoi")
-        .append("g")
-        .attr(
-          "transform",
-          `translate(${this.x(this.dateParser(data[0]))},
-          ${this.y(data[1])})`
-        );
-
-      lineChartTooltip.append("circle").attr("r", this.circleRadius);
-      // .on("click", () =>
-      //   this.mouseClick(this.groupByMonthYearAllCountriesVaccinesCases)
-      // );
-
-      lineChartTooltip
-        .append("text")
-        .text(`${data[0]},${this.formatValue(data[1])} `);
+      
+       this.createTooltip(data[0], data[1], undefined, true);
+      
     },
 
     drawVoronoi(data) {
@@ -293,35 +268,80 @@ export default {
 
       d3.select(`.path-${data[1]}-stringency`).attr("id", "active");
 
+      
+
+this.createTooltip(
+        data[0],
+      data[3],
+        data[2]
+      );
+
+
+    },
+
+ createTooltip(date, value, countryName, allCountries) {
       let lineChartTooltip = this.svg
         .select(".voronoi")
         .append("g")
         .attr(
           "transform",
-          `translate(${this.x(this.dateParser(data[0]))},
-          ${this.yGroupByMonthYearCountryAllCountries(
-            data[3] > 0 ? data[3] : data[3] 
-          )})`
+          `translate(${this.x(this.dateParser(date))},
+          ${
+            !allCountries
+              ? this.yGroupByMonthYearCountryAllCountries(
+                  value >= 1 ? value : value + this.epsilon
+                )
+              : this.y(value >= 1 ? value : value + this.epsilon)
+          })`
         );
-
-      //  lineChartTooltip.append("rect")
-      // .attr("class", "tooltip-frame")
-      // .attr("width", 150)
-      // .attr("height", 50)
 
       lineChartTooltip.append("circle").attr("r", this.circleRadius);
-      // .on("click", () =>
-      //   this.mouseClick(this.groupByMonthYearAllCountriesVaccinesCases)
-      // );
 
-      lineChartTooltip
-        .append("text")
-        .text(
-          `${data[0]},${data[2]},${this.formatValue(data[3])} `
-        );
-      // .attr("x", -70)
-      //   .attr("y", 18);
+      if (countryName !== undefined) countryName = countryName + ", ";
+      else countryName = "";
+
+      this.createTooltipText(
+        lineChartTooltip,
+        "tooltip-text tooltip-text-stroke",
+        date,
+        countryName,
+        value
+      );
+      this.createTooltipText(
+        lineChartTooltip,
+        "tooltip-text",
+        date,
+        countryName,
+        value
+      );
+
     },
+    createTooltipText(tooltip, className, date, countryName, value) {
+      tooltip
+        .append("text")
+        .attr("class", className)
+        .attr("x", -10)
+        .attr("y", -10)
+        .text(
+          `${this.timeFormat(this.dateParser(date))},${countryName}` +
+            `Total: ` +
+            `${this.formatValue(value)} `
+        )
+        .raise();
+
+        
+      if (+date.split("/")[0] < 4 && +date.split("/")[1] === 2020)
+        tooltip
+          .selectAll(".tooltip-text")
+          .attr("id", "tooltip-text-start");
+
+      if (+date.split("/")[0] > 8 && +date.split("/")[1] === 2021)
+        tooltip
+          .selectAll(".tooltip-text")
+          .attr("id", "tooltip-text-end");
+    },
+
+
 
     mouseClick(data) {
       let x0 = this.x.invert(d3.pointer(event)[0]),
@@ -331,7 +351,13 @@ export default {
         d1 = data[i],
         d = x0 - this.dateParser(d0[0]) > this.dateParser(d1[0]) - x0 ? d1 : d0;
 
+       
+      
+
       this.$store.commit("changeSelectedDate", d[0]);
+   if(this.selectedCountries.length!==0)
+       d3.selectAll(`.scatterplot`).attr("id", "not-active-dot");
+       
     },
   },
 
@@ -481,6 +507,9 @@ export default {
     },
     formatValue() {
       return d3.format(",.0f");
+    },
+     timeFormat() {
+      return d3.timeFormat("%B %Y");
     },
 
 

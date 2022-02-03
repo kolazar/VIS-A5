@@ -41,7 +41,7 @@ const store = new Vuex.Store({
 
       state.selectedCountries = []
       state.selectedDate = "12/2021"
-      state.countryToAdd=""
+      state.countryToAdd = ""
       state.countryToDelete = ""
 
     },
