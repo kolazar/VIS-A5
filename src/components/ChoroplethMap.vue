@@ -257,11 +257,9 @@ export default {
       if (data.get(d.id) !== undefined)
         return `${
           data.get(d.id).countryName
-        },\nCardiovascular death rate (annual number of deaths per 100,000 people): ${this.formatValue(
+        },\nCardiovascular death rate: ${this.formatValue(
           data.get(d.id).cardiovascDeathRate
-        )},\nDiabetes prevalence (% of population aged 20 to 79): ${
-          data.get(d.id).diabetesPrevalence
-        }`;
+        )},\nDiabetes prevalence: ${data.get(d.id).diabetesPrevalence}`;
     },
   },
   computed: {

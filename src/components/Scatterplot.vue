@@ -121,7 +121,6 @@ export default {
         .on("click", (event, d) => this.mouseClick(d))
         .append("title")
         .text((d) => this.createTooltipText(d));
-
     },
     updateCircles() {
       if (this.selectedCountries.length !== 0) {
@@ -168,7 +167,6 @@ export default {
         });
 
       this.selectedCountries.forEach((element) => {
-        console.log(element);
         d3.select(`.scatter-${element}`).attr("id", "active-dot");
       });
 
@@ -193,12 +191,12 @@ export default {
           d3.axisLeft(this.yScale1).tickSize(-this.innerWidth).tickSizeOuter(6)
         );
     },
-    
-createTooltipText(d){
-        return `${d.countryName}, \nNew deaths: ${this.formatValue(
-          d.newDeathsSmoothedMillion
-        )},\nNew vaccinations: ${this.formatValue(d.newVaccinesSmoothedMillion)}`;
-      },
+
+    createTooltipText(d) {
+      return `${d.countryName}, \nNew deaths: ${this.formatValue(
+        d.newDeathsSmoothedMillion
+      )},\nNew vaccinations: ${this.formatValue(d.newVaccinesSmoothedMillion)}`;
+    },
     mouseClick(data) {
       if (!this.selectedCountries.includes(data.isoCode)) {
         this.$store.commit("addSelectedCountry", data.isoCode);
@@ -332,8 +330,6 @@ createTooltipText(d){
         .domain([this.dataMinVaccines1, this.dataMaxVaccines1])
         .nice();
     },
-
-
 
     formatValue() {
       return d3.format(",.1f");

@@ -34,12 +34,11 @@ export default {
     drawAllCountriesLine() {
       if (this.$refs.chart) this.svgWidth = this.$refs.chart.clientWidth;
 
-
       this.svg.selectAll("path").remove();
 
       this.drawXAxis();
       this.drawYAxisAllCountries();
-     
+
       this.drawLegend();
 
       this.svg
@@ -107,12 +106,9 @@ export default {
         .ease(d3.easeLinear)
         .attr("stroke-dashoffset", 0);
 
-
-
- this.drawVoronoiAllCountries(
+      this.drawVoronoiAllCountries(
         this.groupByMonthYearAllCountriesVaccinesCases
       );
-
     },
 
     drawXAxis() {
@@ -155,8 +151,8 @@ export default {
 
     drawOneCountryLine() {
       this.svg.selectAll(".all-countries").remove();
-
-      this.svg
+if(this.groupByMonthYearSpecificCountryVaccinesCases.length!==0)
+     { this.svg
         .append("path")
         .datum(this.groupByMonthYearSpecificCountryVaccinesCases)
         .attr("fill", "none")
@@ -230,7 +226,7 @@ export default {
         .transition()
         .duration(3000)
         .ease(d3.easeLinear)
-        .attr("stroke-dashoffset", 0);
+        .attr("stroke-dashoffset", 0);}
 
       this.drawYAxisSpecificCountry();
 
@@ -400,8 +396,8 @@ export default {
 
       let dataTooltip1;
 
-      if (data2 !== undefined && data2.date === data.date) dataTooltip1 = data2;
-      else dataTooltip1 = data1;
+      if (data1 !== undefined && data1.date === data.date) dataTooltip1 = data1;
+      else dataTooltip1 = data2;
 
       this.createTooltip(
         dataTooltip1.date,
@@ -446,7 +442,6 @@ export default {
         countryName,
         value
       );
-
     },
     createTooltipText(tooltip, className, date, countryName, value) {
       tooltip
@@ -461,16 +456,11 @@ export default {
         )
         .raise();
 
-        
       if (+date.split("/")[0] < 4 && +date.split("/")[1] === 2020)
-        tooltip
-          .selectAll(".tooltip-text")
-          .attr("id", "tooltip-text-start");
+        tooltip.selectAll(".tooltip-text").attr("id", "tooltip-text-start");
 
       if (+date.split("/")[0] > 8 && +date.split("/")[1] === 2021)
-        tooltip
-          .selectAll(".tooltip-text")
-          .attr("id", "tooltip-text-end");
+        tooltip.selectAll(".tooltip-text").attr("id", "tooltip-text-end");
     },
 
     drawLegend() {
@@ -483,7 +473,7 @@ export default {
       legendGroupCases
         .append("circle")
         .attr("cx", 40)
-        .attr("cy",  20)
+        .attr("cy", 20)
         .attr("r", 7)
         .attr("fill", "#062f5c");
 
@@ -504,7 +494,7 @@ export default {
 
       legendGroupVaccines
         .append("text")
-        .attr("x", 40+ this.legendTextSpacing)
+        .attr("x", 40 + this.legendTextSpacing)
         .attr("y", 50)
         .attr("dy", ".32em")
         .text("Vaccines");
@@ -701,7 +691,7 @@ export default {
 
     countryToAdd: {
       handler() {
-        if (this.countryToAdd !== "") {
+        if (this.countryToAdd !== "" ) {
           this.drawOneCountryLine();
         }
       },

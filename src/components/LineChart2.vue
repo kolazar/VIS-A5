@@ -25,22 +25,18 @@ export default {
       circleRadius: 5,
     };
   },
-   mounted() {
+  mounted() {
     this.drawAllCountriesLine();
   },
   methods: {
     drawAllCountriesLine() {
       if (this.$refs.chart) this.svgWidth = this.$refs.chart.clientWidth;
 
- 
-
       this.svg.selectAll("path").remove();
 
-this.drawXAxis();
+      this.drawXAxis();
       this.drawYAxisAllCountries();
-      this.drawVoronoiAllCountries(
-        this.groupByMonthYearAllCountries
-      );
+
       this.svg
         .append("g")
 
@@ -62,10 +58,7 @@ this.drawXAxis();
             .curve(d3.curveLinear)
         );
 
-      
-
       let totalLength = d3.select(`#stringency-index`).node().getTotalLength();
-
 
       d3.select(`#stringency-index`)
         .attr("stroke-dasharray", totalLength + " " + totalLength)
@@ -76,35 +69,37 @@ this.drawXAxis();
         .ease(d3.easeLinear)
         .attr("stroke-dashoffset", 0);
 
-     
-
-     
+      this.drawVoronoiAllCountries(this.groupByMonthYearAllCountries);
     },
 
     drawXAxis() {
       this.svg.select(".lines-axes").remove();
       this.svg.select(".line2-axis-x").remove();
 
-      this.svg.append('g').attr('class', 'lines-axes')
+      this.svg.append("g").attr("class", "lines-axes");
 
-      this.svg.select(".lines-axes")
+      this.svg
+        .select(".lines-axes")
         .append("g")
         .attr("class", "line2-axis-x")
         .attr("transform", `translate(0,${this.innerHeight})`)
-        .call(d3.axisBottom(this.x).tickSize(-this.innerHeight).tickSizeOuter(6));
+        .call(
+          d3.axisBottom(this.x).tickSize(-this.innerHeight).tickSizeOuter(6)
+        );
     },
 
     drawYAxisAllCountries() {
       this.svg.select(".line2-axis-y-all").remove();
-     this.svg.select(".line2-axis-y-specific").remove();
+      this.svg.select(".line2-axis-y-specific").remove();
 
-      this.svg.select(".lines-axes")
+      this.svg
+        .select(".lines-axes")
         .append("g")
         .attr("class", "line2-axis-y-all")
         .call(d3.axisLeft(this.y).tickSize(-this.innerWidth).tickSizeOuter(6))
         .raise()
         .append("text")
-        .attr('class','lines-axes-text')
+        .attr("class", "lines-axes-text")
         .attr("transform", "rotate(-90)")
         .attr("x", -6)
         .attr("y", 6)
@@ -116,7 +111,8 @@ this.drawXAxis();
     drawOneCountryLine() {
       d3.selectAll(".line2-all-countries").remove();
 
-      this.svg
+      if(this.groupByMonthYearSpecificCountry.length !== 0)
+     { this.svg
         .append("path")
         .datum(this.groupByMonthYearSpecificCountry)
         .attr("fill", "none")
@@ -131,14 +127,11 @@ this.drawXAxis();
             .line()
             .x((d) => this.x(this.dateParser(d[0])))
             .y((d) => {
-              return this.yGroupByMonthYearCountryAllCountries(
-                d[2] 
-              );
+              return this.yGroupByMonthYearCountryAllCountries(d[2]);
             })
             .curve(d3.curveLinear)
         );
 
-     
       let totalLength = d3
         .select(`.path-${this.countryToAdd}-stringency`)
         .node()
@@ -153,8 +146,7 @@ this.drawXAxis();
         .transition()
         .duration(3000)
         .ease(d3.easeLinear)
-        .attr("stroke-dashoffset", 0);
-
+        .attr("stroke-dashoffset", 0);}
 
       this.drawYAxisSpecificCountry();
 
@@ -162,18 +154,20 @@ this.drawXAxis();
     },
 
     drawYAxisSpecificCountry() {
-
-
-
-         this.svg.select('.line2-axis-y-all')
+      this.svg
+        .select(".line2-axis-y-all")
         .transition()
         .duration(1000)
-        .call(d3.axisLeft(this.yGroupByMonthYearCountryAllCountries).tickSize(-this.innerWidth).tickSizeOuter(6))
-     
+        .call(
+          d3
+            .axisLeft(this.yGroupByMonthYearCountryAllCountries)
+            .tickSize(-this.innerWidth)
+            .tickSizeOuter(6)
+        );
     },
 
     deleteOneCountryLine() {
-     this.svg.select(`.path-${this.countryToDelete}-stringency`).remove();
+      this.svg.select(`.path-${this.countryToDelete}-stringency`).remove();
       this.deleteVoronoi();
       this.drawVoronoi(this.groupVoronoiData);
 
@@ -189,12 +183,9 @@ this.drawXAxis();
     drawVoronoiAllCountries(data) {
       this.deleteVoronoi();
 
-
       let points = data.map((d) => {
         return [this.x(this.dateParser(d[0])), this.y(d[1])];
       });
-
-
 
       let delaunay = d3.Delaunay.from(points);
       let voronoi = delaunay.voronoi([0, 0, this.innerWidth, this.innerHeight]);
@@ -206,9 +197,7 @@ this.drawXAxis();
           voronoiGroup
             .append("path")
             // .attr("stroke", "pink")
-            .on("mouseover", () =>
-              this.onHoverVoronoiAllCountries(data[i])
-            )
+            .on("mouseover", () => this.onHoverVoronoiAllCountries(data[i]))
             .on("click", () =>
               this.mouseClick(this.groupByMonthYearAllCountries)
             )
@@ -223,22 +212,18 @@ this.drawXAxis();
 
     onHoverVoronoiAllCountries(data) {
       this.svg.selectAll("path").attr("id", "not-active");
-     this.svg.selectAll(".voronoi g").remove();
+      this.svg.selectAll(".voronoi g").remove();
 
-      
-       this.createTooltip(data[0], data[1], undefined, true);
-      
+      this.createTooltip(data[0], data[1], undefined, true);
     },
 
     drawVoronoi(data) {
       this.deleteVoronoi();
 
-     
-
       let points = data.map((d) => {
         return [
           this.x(this.dateParser(d[0])),
-          this.yGroupByMonthYearCountryAllCountries(d[3] ),
+          this.yGroupByMonthYearCountryAllCountries(d[3]),
         ];
       });
 
@@ -251,9 +236,7 @@ this.drawXAxis();
         return voronoiGroup
           .append("path")
           .on("mouseover", () => this.onHoverVoronoi(data[i]))
-          .on("click", () =>
-            this.mouseClick(this.groupByMonthYearAllCountries)
-          )
+          .on("click", () => this.mouseClick(this.groupByMonthYearAllCountries))
           .attr(
             "d",
 
@@ -268,18 +251,10 @@ this.drawXAxis();
 
       d3.select(`.path-${data[1]}-stringency`).attr("id", "active");
 
-      
-
-this.createTooltip(
-        data[0],
-      data[3],
-        data[2]
-      );
-
-
+      this.createTooltip(data[0], data[3], data[2], false);
     },
 
- createTooltip(date, value, countryName, allCountries) {
+    createTooltip(date, value, countryName, allCountries) {
       let lineChartTooltip = this.svg
         .select(".voronoi")
         .append("g")
@@ -289,9 +264,9 @@ this.createTooltip(
           ${
             !allCountries
               ? this.yGroupByMonthYearCountryAllCountries(
-                  value >= 1 ? value : value + this.epsilon
+                  value >= 1 ? value : value
                 )
-              : this.y(value >= 1 ? value : value + this.epsilon)
+              : this.y(value >= 1 ? value : value)
           })`
         );
 
@@ -314,7 +289,6 @@ this.createTooltip(
         countryName,
         value
       );
-
     },
     createTooltipText(tooltip, className, date, countryName, value) {
       tooltip
@@ -329,19 +303,12 @@ this.createTooltip(
         )
         .raise();
 
-        
       if (+date.split("/")[0] < 4 && +date.split("/")[1] === 2020)
-        tooltip
-          .selectAll(".tooltip-text")
-          .attr("id", "tooltip-text-start");
+        tooltip.selectAll(".tooltip-text").attr("id", "tooltip-text-start");
 
       if (+date.split("/")[0] > 8 && +date.split("/")[1] === 2021)
-        tooltip
-          .selectAll(".tooltip-text")
-          .attr("id", "tooltip-text-end");
+        tooltip.selectAll(".tooltip-text").attr("id", "tooltip-text-end");
     },
-
-
 
     mouseClick(data) {
       let x0 = this.x.invert(d3.pointer(event)[0]),
@@ -351,13 +318,9 @@ this.createTooltip(
         d1 = data[i],
         d = x0 - this.dateParser(d0[0]) > this.dateParser(d1[0]) - x0 ? d1 : d0;
 
-       
-      
-
       this.$store.commit("changeSelectedDate", d[0]);
-   if(this.selectedCountries.length!==0)
-       d3.selectAll(`.scatterplot`).attr("id", "not-active-dot");
-       
+      if (this.selectedCountries.length !== 0)
+        d3.selectAll(`.scatterplot`).attr("id", "not-active-dot");
     },
   },
 
@@ -393,7 +356,6 @@ this.createTooltip(
         return this.$store.getters.voronoiData;
       },
     },
-    
 
     groupByMonthYearAllCountries() {
       return d3.flatRollup(
@@ -407,11 +369,10 @@ this.createTooltip(
       );
     },
 
-     groupByMonthYearSpecificCountry() {
-      
+    groupByMonthYearSpecificCountry() {
       return d3.flatRollup(
         this.lineSpecificCountryData,
-       (v) =>
+        (v) =>
           d3.mean(v, (d) => {
             if (typeof d.stringencyIndex !== "undefined")
               return d.stringencyIndex;
@@ -421,7 +382,6 @@ this.createTooltip(
       );
     },
     groupByMonthYearCountry() {
-
       return d3.flatRollup(
         this.data,
         (v) =>
@@ -434,11 +394,10 @@ this.createTooltip(
       );
     },
 
-     groupVoronoiData(){
- 
-     return d3.flatRollup(
+    groupVoronoiData() {
+      return d3.flatRollup(
         this.voronoiData,
-       (v) =>
+        (v) =>
           d3.mean(v, (d) => {
             if (typeof d.stringencyIndex !== "undefined")
               return d.stringencyIndex;
@@ -449,12 +408,10 @@ this.createTooltip(
       );
     },
 
- innerHeight() {
+    innerHeight() {
       return this.svgHeight - this.svgPadding.top - this.svgPadding.bottom;
     },
     innerWidth() {
-      
-
       return this.svgWidth - this.svgPadding.left - this.svgPadding.right;
     },
     svg() {
@@ -480,24 +437,14 @@ this.createTooltip(
     y() {
       return d3
         .scaleLinear()
-        .domain([
-          0,
-          d3.max(this.groupByMonthYearAllCountries, (d) =>
-            d[1]
-          ),
-        ])
+        .domain([0, d3.max(this.groupByMonthYearAllCountries, (d) => d[1])])
         .range([this.innerHeight, 0])
         .nice();
     },
     yGroupByMonthYearCountryAllCountries() {
       return d3
         .scaleLinear()
-        .domain([
-          0,
-          d3.max(this.groupByMonthYearCountry, (d) =>
-            d[2]
-          ),
-        ])
+        .domain([0, d3.max(this.groupByMonthYearCountry, (d) => d[2])])
         .range([this.innerHeight, 0])
         .nice();
     },
@@ -508,11 +455,9 @@ this.createTooltip(
     formatValue() {
       return d3.format(",.0f");
     },
-     timeFormat() {
+    timeFormat() {
       return d3.timeFormat("%B %Y");
     },
-
-
   },
 
   watch: {
@@ -522,9 +467,10 @@ this.createTooltip(
       },
       deep: true,
     },
-    
+
     countryToAdd: {
       handler() {
+        
         if (this.countryToAdd !== "") {
           this.drawOneCountryLine();
         }
@@ -550,7 +496,6 @@ this.createTooltip(
 </script>
 
 <style>
-
 #active {
   stroke: #062f5c;
   stroke-width: 2.5;
@@ -564,5 +509,4 @@ this.createTooltip(
   fill: none;
   pointer-events: all;
 }
-
 </style>

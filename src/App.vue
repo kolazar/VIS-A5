@@ -7,16 +7,30 @@
         </div>
       </div>
 
+      <div class="lds-roller">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
 
-<div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+      <h3 class="loading-message">Loading data...</h3>
 
-<h3 class='loading-message'>Loading data...</h3>
-
-
-
-
-    
       <div id="hide-screen" class="col-md-12" style="display: none">
+        <div class="col-md-4 offset-4">
+          <div class="note">
+            <p><b>How to use?</b></p>
+            <p>
+              Hover on map legend, press/hover on a country, press/hover on any
+              line chart, press/hover on a dot on a scatter plot graph.
+            </p>
+          </div>
+        </div>
+
         <div class="row">
           <div class="col-md-12">
             <ControlPlane />
@@ -85,38 +99,34 @@ p {
   font-size: 18px;
 }
 
-
 .lines-axes text {
-  fill:  #635F5D;
+  fill: #635f5d;
 }
 
 .lines-axes .lines-axes-text {
-     font-size: 12px;
-
+  font-size: 12px;
 }
 
-.tooltip-text{
+.tooltip-text {
   text-anchor: middle;
- font-size: 16px;
-fill:  #635F5D;
+  font-size: 16px;
+  fill: #635f5d;
 }
 
-.tooltip-text-stroke{
-
-  stroke:white;
+.tooltip-text-stroke {
+  stroke: white;
   stroke-width: 4px;
 }
-#tooltip-text-start{
+#tooltip-text-start {
   text-anchor: start;
 }
-#tooltip-text-end{
+#tooltip-text-end {
   text-anchor: end;
 }
 
 .lines-axes line {
-  stroke:   #E5E2E0;
+  stroke: #e5e2e0;
 }
-
 
 .lds-roller {
   display: inline-block;
@@ -203,6 +213,12 @@ fill:  #635F5D;
   }
 }
 
-
-
+div.note {
+  background-color: #f0f7fb;
+  border-left: solid 4px #3498db;
+  line-height: 18px;
+  mc-auto-number-format: "{b}Note: {/b}";
+  overflow: hidden;
+  padding: 12px;
+}
 </style>

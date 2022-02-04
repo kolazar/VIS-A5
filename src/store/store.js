@@ -16,6 +16,7 @@ const store = new Vuex.Store({
   mutations: {
 
     changeSelectedDate(state, date) {
+    
       state.selectedDate = date;
 
     },
@@ -348,11 +349,11 @@ const store = new Vuex.Store({
   actions: {
     loadData({ state }) {
 
-      d3.csv('./owid-covid-data-choropleth.csv')
+      // d3.csv('./owid-covid-data-choropleth.csv')
 
-        .then((d) => {
-          state.choroplethMapData = d;
-        })
+      //   .then((d) => {
+      //     state.choroplethMapData = d;
+      //   })
 
       d3.csv('./owid-covid-data-reduced.csv').then((d) => {
         Object.freeze(d);

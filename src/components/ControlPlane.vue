@@ -1,18 +1,24 @@
 <template>
   <div>
     <div class="mt-2">
-      <p>Selected Date: <b>{{ this.timeFormat(this.dateParser(selectedDate)) }}</b></p>
+      <p>
+        Selected Date:
+        <b>{{ this.timeFormat(this.dateParser(selectedDate)) }}</b>
+      </p>
     </div>
     <div class="mt-2">
-      <p>Selected Countries:<b>{{selectedCountriesNames.length === 0? " no countries selected":selectedCountriesNames.join(', ')}}</b></p>
+      <p>
+        Selected Countries:<b>{{
+          selectedCountriesNames.length === 0
+            ? " no countries selected"
+            : selectedCountriesNames.join(", ")
+        }}</b>
+      </p>
     </div>
     <div class="mt-2">
-    <button v-on:click="reset(this)">Reset</button>
-
+      <button v-on:click="reset(this)">Reset</button>
     </div>
-    <div class="mt-2">
-
-    </div>
+    <div class="mt-2"></div>
   </div>
 </template>
 
@@ -34,8 +40,11 @@ export default {
       }
 
       d3.selectAll(`.scatterplot`).attr("id", null);
-      d3.select(".map").selectAll("path").attr("id", null).attr("stroke", null)
-          .attr("stroke-width", null)
+      d3.select(".map")
+        .selectAll("path")
+        .attr("id", null)
+        .attr("stroke", null)
+        .attr("stroke-width", null);
     },
   },
   computed: {
@@ -55,20 +64,15 @@ export default {
         return this.$store.getters.selectedCountries;
       },
     },
-    selectedCountriesNames (){
+    selectedCountriesNames() {
+      let result = [];
 
-        let result =[]
-
-        this.selectedCountries.forEach(element => {
-          this.data.forEach(element1 => {
-             if (element === element1.isoCode)
-          result.push(element1.countryName)
-          });
-
-         
-          
+      this.selectedCountries.forEach((element) => {
+        this.data.forEach((element1) => {
+          if (element === element1.isoCode) result.push(element1.countryName);
         });
-        return result
+      });
+      return result;
     },
 
     dateParser() {
@@ -92,7 +96,6 @@ export default {
 
 
 <style scoped>
-
 button {
   position: relative;
   background-color: #7a7a7a;
@@ -118,14 +121,13 @@ button:after {
   margin-left: -20px !important;
   margin-top: -120%;
   opacity: 0;
-  transition: all 0.8s
+  transition: all 0.8s;
 }
 
 button:active:after {
   padding: 0;
   margin: 0;
   opacity: 1;
-  transition: 0s
+  transition: 0s;
 }
-
 </style>
